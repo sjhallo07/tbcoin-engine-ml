@@ -1,0 +1,118 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # API Gateway
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://tbcoin_user:password@db:5432/tbcoin
+      - REDIS_URL=redis://redis:6379
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Blockchain Listener
+  blockchain-listener:
+    build:
+      context: .
+      dockerfile: Dockerfile.listener
+    environment:
+      - DATABASE_URL=postgresql://tbcoin_user:password@db:5432/tbcoin
+      - REDIS_URL=redis://redis:6379
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # ML Worker
+  ml-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.ml
+    environment:
+      - DATABASE_URL=postgresql://tbcoin_user:password@db:5432/tbcoin
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./models:/app/models
+    deploy:
+      replicas: 2
+
+  # Database
+  db:
+    image: timescale/timescaledb:latest-pg14
+    environment:
+      - POSTGRES_DB=tbcoin
+      - POSTGRES_USER=tbcoin_user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tbcoin_user -d tbcoin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Monitoring (Prometheus + Grafana)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

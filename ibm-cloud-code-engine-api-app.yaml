@@ -1,0 +1,32 @@
+# ibm-cloud/code-engine/api-app.yaml
+apiVersion: codeengine.cloud.ibm.com/v2
+kind: App
+metadata:
+  name: tbcoin-api
+spec:
+  image: us-south.icr.io/tbcoin-registry/tbcoin-api:v1.0.0
+  port: 8000
+  runAsUser: 1000
+  runAsNonRoot: true
+  scale:
+    min: 1
+    max: 3
+    target: 80
+  resources:
+    cpu: 0.25
+    memory: 0.5G
+  env:
+    - name: DATABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: tbcoin-secrets
+          key: database-url
+    - name: REDIS_URL
+      valueFrom:
+        secretKeyRef:
+          name: tbcoin-secrets
+          key: redis-url
+    - name: SOLANA_RPC_URL
+      value: "https://api.mainnet-beta.solana.com"
+  runtime:
+    threadPerCore: 1
