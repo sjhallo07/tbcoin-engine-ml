@@ -1,0 +1,23 @@
+programming_languages:
+  primary: "Python 3.11+"
+  secondary: "Node.js 20+" 
+  blockchain: "Rust (for future Solana programs)"
+
+frameworks:
+  api: "FastAPI + Uvicorn"
+  data_processing: "Pandas + Polars + Dask"
+  ml_framework: "Scikit-learn + XGBoost + LightGBM"
+  async: "asyncio + aiohttp"
+  blockchain: "web3.py + solana.py"
+
+databases:
+  primary: "PostgreSQL + TimescaleDB"
+  cache: "Redis"
+  analytics: "ClickHouse (for large datasets)"
+  vector_store: "Qdrant (future embeddings)"
+
+infrastructure:
+  containerization: "Docker + Docker Compose"
+  orchestration: "Kubernetes (local minikube)"
+  monitoring: "Prometheus + Grafana"
+  messaging: "Redis Pub/Sub + Apache Kafka"
