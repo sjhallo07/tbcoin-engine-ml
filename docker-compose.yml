@@ -1,70 +1,40 @@
-# docker-compose.yml
 version: '3.8'
 
 services:
-  api:
-    build: 
-      context: .
-      dockerfile: Dockerfile.api
+  tbcoin-api:
+    build: .
+    container_name: tbcoin-engine-ml
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/tbcoin
-      - REDIS_URL=redis://redis:6379
+      - APP_ENV=production
+      - DEBUG=False
+      - DATABASE_URL=sqlite:///./tbcoin.db
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
     depends_on:
-      - db
       - redis
-    volumes:
-      - ./models:/app/models
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-  blockchain-listener:
-    build:
-      context: .
-      dockerfile: Dockerfile.listener
-    environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/tbcoin
-      - SOLANA_RPC_URL=${SOLANA_RPC_URL}
-    depends_on:
-      - db
-      - redis
-    volumes:
-      - ./logs:/app/logs
-
-  ml-worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.ml
-    environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/tbcoin
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - db
-      - redis
-    volumes:
-      - ./models:/app/models
-    deploy:
-      replicas: 2
-
-  db:
-    image: timescale/timescaledb:latest-pg14
-    environment:
-      - POSTGRES_DB=tbcoin
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - tbcoin-network
 
   redis:
     image: redis:7-alpine
+    container_name: tbcoin-redis
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - tbcoin-network
 
 volumes:
-  postgres_data:
-  redis_data:
+  redis-data:
+
+networks:
+  tbcoin-network:
+    driver: bridge

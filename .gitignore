@@ -16,14 +16,19 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Virtual environments
+# Virtual Environment
 venv/
 env/
 ENV/
+env.bak/
+venv.bak/
 
 # IDE
 .vscode/
@@ -32,21 +37,35 @@ ENV/
 *.swo
 *~
 
+# Environment variables
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 
-# Models
+# Model files
 models/
-*.pkl
-*.h5
-*.pb
+*.pth
+*.pt
+*.onnx
 
-# Logs
-*.log
-logs/
+# Temporary files
+tmp/
+temp/
+*.tmp
 
 # OS
 .DS_Store
