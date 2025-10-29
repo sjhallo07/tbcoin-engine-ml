@@ -24,6 +24,24 @@ A sophisticated backend system that leverages Machine Learning and Large Languag
 - **Serverless**: AWS Lambda-ready with Serverless Framework support
 - **Cloud-Native**: Kubernetes and cloud provider compatible
 
+## 🆕 New Services (Integration Complete)
+
+We integrated a set of new services to enable autonomous trading, model training, tracking, and enhanced monitoring. Integration is complete — the autonomous agent now runs alongside the core TB Coin services.
+
+- 🧠 Autonomous Agent: AI-powered autonomous trading agent that analyzes markets 24/7, makes multi-model recommendations (LLM + ML + RL), and can execute controlled trades.
+- 🤖 ML Worker: Background worker for model training, data processing, and batch jobs.
+- 📊 MLflow: Model tracking, experiments, and artifact storage (integrated via MinIO for local runs).
+- 📈 Enhanced Monitoring: Prometheus + Grafana dashboards and custom AI performance metrics.
+
+Workflow:
+- Continuous Analysis: The agent analyzes market data continuously and produces structured insights.
+- AI Decisions: Recommendations are produced by an ensemble of models (technical, LLM, and RL) with confidence & risk scoring.
+- Controlled Execution: Trades may be executed manually via the API or automatically when `AI_TRADING_ENABLED=true` and safety checks pass.
+- Continuous Learning: Periodic retraining and strategy evolution are performed automatically using historical performance and a strategy evolver.
+
+Status: Integration is complete — the new services are included in `docker-compose.yml` and can be run locally with Docker Compose.
+
+
 ## 🏗️ Architecture
 
 ```
