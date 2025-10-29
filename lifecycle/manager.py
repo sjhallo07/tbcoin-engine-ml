@@ -157,9 +157,12 @@ class LifecycleManager:
         
     def setup_signal_handlers(self):
         """Setup signal handlers for graceful shutdown."""
+        loop = asyncio.get_event_loop()
+        
         def signal_handler(signum, frame):
             logger.info(f"Received signal {signum}, initiating shutdown...")
-            asyncio.create_task(self.shutdown())
+            # Schedule shutdown in the event loop safely
+            loop.call_soon_threadsafe(lambda: asyncio.create_task(self.shutdown()))
             
         signal.signal(signal.SIGTERM, signal_handler)
         signal.signal(signal.SIGINT, signal_handler)

@@ -140,9 +140,9 @@ class ModelLifecycleManager:
             
             try:
                 # Remove model and metadata
-                del self.models[model_key]
                 metadata = self.metadata[model_key]
                 metadata.state = LifecycleState.STOPPED
+                del self.models[model_key]
                 
                 logger.info(
                     f"Model {model_key} unloaded. "

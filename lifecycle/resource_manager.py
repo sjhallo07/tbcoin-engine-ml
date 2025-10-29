@@ -154,9 +154,9 @@ class ResourceLifecycleManager:
                         await cleaner(resource)
                     else:
                         cleaner(resource)
-                        
-                del self.resources[name]
+                
                 info.state = LifecycleState.STOPPED
+                del self.resources[name]
                 
                 logger.info(f"Resource {name} cleaned up successfully")
                 
