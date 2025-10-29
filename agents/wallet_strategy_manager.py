@@ -120,7 +120,8 @@ class WalletStrategyManager:
 
                 # Replace executor.wallet with the target wallet keypair if possible
                 try:
-                    executor.wallet = self.wallet_pool[wallet_id]["keypair"]
+                    # Use setattr to avoid assuming the executor has a 'wallet' attribute (prevents type errors)
+                    setattr(executor, "wallet", self.wallet_pool[wallet_id]["keypair"])
                 except Exception:
                     # If wallet cannot be set, proceed and rely on executor defaults
                     pass

@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Dict, Optional
 import asyncio
+import inspect
 
 from config import config
 from agents.autonomous_agent import AutonomousTradingAgent
@@ -19,15 +20,28 @@ class AgentControlRequest(BaseModel):
 class TradingDecisionRequest(BaseModel):
     market_data: Dict
     strategy: Optional[str] = "composite"
-
 @router.on_event("startup")
 async def startup_autonomous_agent():
     """Inicializar agente autónomo al iniciar la API"""
     global autonomous_agent
     if getattr(config, "AI_AGENT_ENABLED", False):
         autonomous_agent = AutonomousTradingAgent()
-        # Iniciar en modo análisis (no trading automático)
-        asyncio.create_task(autonomous_agent.start_analysis_mode())
+        # Iniciar en modo análisis (no trading automático) si el método existe
+        start_analysis = getattr(autonomous_agent, "start_analysis_mode", None)
+        if callable(start_analysis):
+            # Si es una coroutine function, crear tarea directamente; si es síncrona, ejecutarla en un thread
+            if inspect.iscoroutinefunction(start_analysis):
+                asyncio.create_task(start_analysis())
+            else:
+                asyncio.create_task(asyncio.to_thread(start_analysis))
+        else:
+            # Intentar un nombre alternativo común si existe
+            start_analysis_alt = getattr(autonomous_agent, "start_analysis", None)
+            if callable(start_analysis_alt):
+                if inspect.iscoroutinefunction(start_analysis_alt):
+                    asyncio.create_task(start_analysis_alt())
+                else:
+                    asyncio.create_task(asyncio.to_thread(start_analysis_alt))
 
 @router.post("/control")
 async def control_autonomous_agent(request: AgentControlRequest):
@@ -83,10 +97,35 @@ async def get_agent_performance():
     if not autonomous_agent:
         return {"error": "Agent not available"}
     
+    # Safely get performance metrics
+    performance_metrics = getattr(autonomous_agent, "performance_metrics", {})
+
+    # Safely retrieve learning insights if the method exists (supports sync or async)
+    learning_insights = []
+    learning_loop = getattr(autonomous_agent, "learning_loop", None)
+    if learning_loop is not None:
+        getter = getattr(learning_loop, "get_recent_insights", None)
+        if callable(getter):
+            result = getter()
+            if asyncio.iscoroutine(result):
+                learning_insights = await result
+            else:
+                learning_insights = result
+
+    # Safely retrieve strategy performance (supports sync or async)
+    strategy_performance = {}
+    get_strategy = getattr(autonomous_agent, "get_strategy_performance", None)
+    if callable(get_strategy):
+        sp_result = get_strategy()
+        if asyncio.iscoroutine(sp_result):
+            strategy_performance = await sp_result
+        else:
+            strategy_performance = sp_result
+
     return {
-        "performance_metrics": getattr(autonomous_agent, "performance_metrics", {}),
-        "learning_insights": await autonomous_agent.learning_loop.get_recent_insights(),
-        "strategy_performance": await autonomous_agent.get_strategy_performance()
+        "performance_metrics": performance_metrics,
+        "learning_insights": learning_insights,
+        "strategy_performance": strategy_performance or {}
     }
 
 @router.post("/train-model")

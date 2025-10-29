@@ -67,10 +67,31 @@ async def main():
     if asyncio.iscoroutine(analysis):
         analysis = await analysis
 
-    # Pretty-print results
-    conf = analysis.get("confidence_level", analysis.get("confidence", 0.0))
-    recommendation = analysis.get("llm_recommendation", "HOLD")
-    risk = analysis.get("risk_assessment", {"score": 0.0})
+    # Helper to safely extract fields from dict-like or object-like analysis results
+    def _safe_get(obj, key, default=None):
+        try:
+            if isinstance(obj, dict):
+                return obj.get(key, default)
+            return getattr(obj, key, default)
+        except Exception:
+            return default
+
+    # Pretty-print results (use safe accessor to avoid calling .get on non-dict)
+    conf = _safe_get(analysis, "confidence_level", _safe_get(analysis, "confidence", 0.0))
+    recommendation = _safe_get(analysis, "llm_recommendation", "HOLD")
+    risk = _safe_get(analysis, "risk_assessment", {"score": 0.0})
+    if risk is None:
+        risk = {"score": 0.0}
+
+    # Normalize risk score for printing
+    if isinstance(risk, dict):
+        risk_score = risk.get("score", 0.0)
+    else:
+        # Try attribute or numeric conversion, else fallback to the object itself
+        try:
+            risk_score = float(getattr(risk, "score", risk))
+        except Exception:
+            risk_score = risk
 
     print("📊 Market Analysis Completed:")
     try:
@@ -79,9 +100,9 @@ async def main():
         print(f"   Confidence: {conf}")
     print(f"   Recommendation: {recommendation}")
     try:
-        print(f"   Risk Score: {float(risk.get('score', 0.0)):.2f}")
+        print(f"   Risk Score: {float(risk_score):.2f}")
     except Exception:
-        print(f"   Risk Score: {risk}")
+        print(f"   Risk Score: {risk_score}")
 
 
 if __name__ == "__main__":
