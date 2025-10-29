@@ -1,0 +1,22 @@
+# ibm-cloud/code-engine/blockchain-listener-job.yaml
+apiVersion: codeengine.cloud.ibm.com/v2
+kind: Job
+metadata:
+  name: tbcoin-blockchain-listener
+spec:
+  image: us-south.icr.io/tbcoin-registry/tbcoin-blockchain-listener:v1.0.0
+  runAsUser: 1000
+  runAsNonRoot: true
+  arraySpec: 1
+  retryLimit: 3
+  env:
+    - name: DATABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: tbcoin-secrets
+          key: database-url
+    - name: SOLANA_RPC_URL
+      value: "https://api.mainnet-beta.solana.com"
+  resources:
+    cpu: 0.25
+    memory: 0.5G

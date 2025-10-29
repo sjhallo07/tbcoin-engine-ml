@@ -1,0 +1,17 @@
+# ibm-cloud/code-engine/optimized-config.yaml
+apiVersion: codeengine.cloud.ibm.com/v2
+kind: App
+metadata:
+  name: tbcoin-api-optimized
+spec:
+  image: us-south.icr.io/tbcoin-registry/tbcoin-api:v1.0.0
+  port: 8000
+  scale:
+    min: 0  # Scale to zero when not in use (FREE)
+    max: 2
+    target: 80
+  resources:
+    cpu: 0.125  # Minimum CPU (FREE tier compatible)
+    memory: 0.25G  # Minimum memory
+  runtime:
+    threadPerCore: 1

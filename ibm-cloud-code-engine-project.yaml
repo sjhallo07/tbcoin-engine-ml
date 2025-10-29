@@ -1,0 +1,11 @@
+# ibm-cloud/code-engine/project.yaml
+apiVersion: codeengine.cloud.ibm.com/v2
+kind: Project
+metadata:
+  name: tbcoin-project
+spec:
+  description: "TB Coin Quantum Meme Intelligence Platform"
+  tags:
+    - "blockchain"
+    - "ai-ml"
+    - "solana"

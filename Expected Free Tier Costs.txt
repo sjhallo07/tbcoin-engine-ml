@@ -1,0 +1,5 @@
+📊 IBM Cloud Free Tier Usage:
+✅ Code Engine: ~$0/month (within 400 GB-hours)
+✅ Container Registry: ~$0/month (within 0.5GB storage)  
+✅ Monitoring: ~$0/month (basic logging)
+✅ Total Estimated Cost: $0/month for development

@@ -1,0 +1,21 @@
+# .github/workflows/ibm-deploy.yml
+name: Deploy to IBM Code Engine
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: IBM Cloud Login
+      uses: ibmcloud/ibm-cloud-cli-action@v2
+      with:
+        ibmcloud_api_key: ${{ secrets.IBM_CLOUD_API_KEY }}
+        
+    - name: Deploy to Code Engine
+      run: |
+        ./scripts/deploy-ibm-ce.sh
