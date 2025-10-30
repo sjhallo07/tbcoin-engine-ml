@@ -1,3 +1,81 @@
+# TB Coin Engine — Autonomous AI Trading Agent
+
+## Overview
+
+TB Coin Engine is a Python platform that integrates blockchain access, an autonomous AI trading agent, and ML-driven predictive components. It provides a FastAPI-based API, agent orchestrators, ML/diagnostics scaffolding, and optional Docker Compose manifests for local integration testing (TimescaleDB, Redis, MLflow, MinIO, Prometheus, Grafana).
+
+This repository is intended for development, experiments, and demonstration of safe-by-default autonomous trading patterns: analysis-only mode, guarded imports for optional ML/LLM libs, and KMS-backed signing recommendations for production.
+
+## Key Features
+
+- FastAPI API with health and status endpoints (`/health`, `/status`).
+- Autonomous agent scaffolding under `/api/v1/autonomous` (control, analyze, train).
+- Diagnostics using FastAPI `TestClient` for in-process checks.
+- Optional ML and tracking stack via `docker-compose.yml`.
+- Safe feature flags: `AI_AGENT_ENABLED`, `AI_TRADING_ENABLED`.
+
+## Quick start (development)
+
+1. Create virtual environment and activate it:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1   # Windows PowerShell
+# or: source .venv/bin/activate (macOS / Linux)
+```
+
+2. Install minimal dependencies:
+
+```powershell
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r requirements-minimal.txt
+```
+
+3. Run the API (foreground):
+
+```powershell
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+```
+
+4. Quick checks:
+
+```powershell
+Invoke-RestMethod 'http://127.0.0.1:8000/health' | ConvertTo-Json -Depth 5
+Invoke-RestMethod 'http://127.0.0.1:8000/status' | ConvertTo-Json -Depth 5
+```
+
+## Diagnostics
+
+- `diagnostics/test_health.py` uses FastAPI `TestClient` to validate `/health` and `/status` without starting a server.
+- `diagnostics/test_status.py` is an additional smoke test used previously.
+
+## Local observability
+
+- A module-level `tbcoin` logger is configured for local development to emit startup and health messages. For production, configure structured logging and a handler that forwards logs to your log aggregation system.
+- Use the included Prometheus/Grafana stack in `docker-compose.yml` for metrics and dashboards when running the full stack.
+
+## Configuration & Secrets
+
+- Use feature flags to control agent behavior:
+  - `AI_AGENT_ENABLED` — instantiate agent on startup
+  - `AI_TRADING_ENABLED` — allow execution of real trades (keep false during testing)
+- DO NOT commit real secrets. Use a secrets manager for production (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager). See `.env.template` for placeholders.
+
+## Docker Compose (optional)
+
+The `docker-compose.yml` includes services for API, autonomous-agent, TimescaleDB, Redis, MLflow, MinIO, Prometheus and Grafana. Start only after local validation and secret provisioning.
+
+## Contributing
+
+- Fork, create topic branches, run tests, and open a pull request. Include tests for new behavior and document configuration or secret requirements.
+
+## License
+
+See `LICENSE` in the repository root for license terms.
+
+## Contact
+
+- Use GitHub Issues for bugs and feature requests.
 # TB Coin Engine ML
 
 🚀 **AI-Powered Backend Engine for TB Coin Serverless Operations**
