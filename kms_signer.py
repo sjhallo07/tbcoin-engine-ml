@@ -1,3 +1,52 @@
+"""KMS / signer stub for local dev and CI.
+
+This module provides a minimal Signer abstraction that can be backed by:
+- a KMS resource (identified by KMS_KEY_ID env var) — stubbed here
+- a local private key provided via env var `AUTONOMOUS_TRADING_PRIVATE_KEY` (dev only)
+
+It also supports a simulation mode controlled by `SIMULATE_TRADING` (default true)
+to ensure we don't accidentally send real transactions during tests or dev runs.
+"""
+import os
+from typing import Any, Optional
+
+
+class SignerStub:
+    """A tiny signer interface used by SolanaAdapter.send_transaction.
+
+    Attributes:
+        public_key: str-like public identifier (for demo only)
+    """
+
+    def __init__(self, key_id: Optional[str] = None, private_key: Optional[str] = None):
+        self.kms_key_id = key_id
+        self.private_key = private_key
+        # For demo purposes present a simple public identifier
+        if self.kms_key_id:
+            self.public_key = f"kms:{self.kms_key_id}"
+        elif self.private_key:
+            # In real use this would be derived from the private key
+            self.public_key = "local-dev-public-key"
+        else:
+            self.public_key = "unsigned"
+
+    def sign(self, message: bytes) -> bytes:
+        """Return a deterministic fake signature for local testing."""
+        # DO NOT use this for production signing — it is a placeholder
+        return b"signed-by-stub"
+
+
+def get_signer_from_env() -> SignerStub:
+    kms_key = os.getenv("KMS_KEY_ID")
+    priv = os.getenv("AUTONOMOUS_TRADING_PRIVATE_KEY")
+    return SignerStub(key_id=kms_key, private_key=priv)
+
+
+def is_simulation_mode() -> bool:
+    return os.getenv("SIMULATE_TRADING", "true").lower() in ("1", "true", "yes")
+
+
+__all__ = ["SignerStub", "get_signer_from_env", "is_simulation_mode"]
 """
 kms_signer.py
 

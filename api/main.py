@@ -34,6 +34,11 @@ except Exception:
 
 # NEW - Importar autonomous agent routes
 from api.autonomous_routes import router as autonomous_router
+# NEW - Import solana endpoints router
+try:
+    from api.solana_endpoints import router as solana_router
+except Exception:
+    solana_router = None
 
 app = FastAPI(
     title="TB Coin API - Quantum Meme Intelligence",
@@ -58,6 +63,9 @@ if blockchain_gateway is not None:
 
 # NEW - Include autonomous agent routes
 app.include_router(autonomous_router)
+# NEW - Include solana endpoints when available
+if solana_router is not None:
+    app.include_router(solana_router)
 
 @app.get("/")
 async def root():
@@ -113,7 +121,3 @@ async def status():
         }
     }
 
-@app.get("/health")
-async def health():
-    """Lightweight liveness endpoint used by readiness/liveness probes."""
-    return {"status": "ok"}

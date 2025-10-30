@@ -36,9 +36,8 @@ jobs:
 
       - name: Run tests
         run: |
-          # Add your test runner here (pytest is common). Using a placeholder
-          python -m pip install pytest || true
-          pytest -q || true
+          python -m pip install pytest
+          pytest -q
 
       - name: Build and validate canary package
         run: |
