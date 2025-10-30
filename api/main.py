@@ -2,6 +2,21 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
+# Basic logger for startup/liveness messages
+logger = logging.getLogger("tbcoin")
+logger.setLevel(logging.INFO)
+
+# Configure a module-level logger for startup/health messages
+logger = logging.getLogger("tbcoin")
+if not logger.handlers:
+    # Basic configuration for local development; containerized runs should
+    # configure structured logging/handlers as appropriate.
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
 # Import config
 from config import config
 
@@ -57,6 +72,27 @@ async def root():
         }
     }
 
+@app.get("/health")
+async def health():
+    """Lightweight liveness endpoint for readiness probes and quick checks."""
+    # Prefer the agent instance managed by the API routes module
+    try:
+        from api.autonomous_routes import autonomous_agent
+    except Exception:
+        autonomous_agent = None
+
+    # Emit a small info log so container orchestrators and local runs show startup progress
+    logger.info("/health requested - agent_enabled=%s, agent_running=%s",
+                getattr(config, "AI_AGENT_ENABLED", False),
+                bool(autonomous_agent and getattr(autonomous_agent, "is_running", False)))
+
+    return {
+        "status": "ok",
+        "autonomous_agent_enabled": getattr(config, "AI_AGENT_ENABLED", False),
+        "autonomous_agent_running": bool(autonomous_agent and getattr(autonomous_agent, "is_running", False))
+    }
+
+
 @app.get("/status")
 async def status():
     """Endpoint de status extendido"""
@@ -76,3 +112,8 @@ async def status():
             "status": "running" if autonomous_agent and getattr(autonomous_agent, "is_running", False) else "stopped"
         }
     }
+
+@app.get("/health")
+async def health():
+    """Lightweight liveness endpoint used by readiness/liveness probes."""
+    return {"status": "ok"}

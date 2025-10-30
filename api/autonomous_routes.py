@@ -7,6 +7,9 @@ import inspect
 from config import config
 from agents.autonomous_agent import AutonomousTradingAgent
 from agents.learning_feedback_loop import LearningFeedbackLoop
+import logging
+logger = logging.getLogger("tbcoin")
+logger.setLevel(logging.INFO)
 
 router = APIRouter(prefix="/api/v1/autonomous", tags=["autonomous-agent"])
 
@@ -24,6 +27,7 @@ class TradingDecisionRequest(BaseModel):
 async def startup_autonomous_agent():
     """Inicializar agente autónomo al iniciar la API"""
     global autonomous_agent
+    logger.info("Autonomous agent startup requested; AI_AGENT_ENABLED=%s", getattr(config, "AI_AGENT_ENABLED", False))
     if getattr(config, "AI_AGENT_ENABLED", False):
         autonomous_agent = AutonomousTradingAgent()
         # Iniciar en modo análisis (no trading automático) si el método existe
@@ -161,3 +165,5 @@ async def train_models_background(model_type: str):
         rl_agent = ReinforcementLearningAgent()
         if hasattr(rl_agent, "train"):
             await rl_agent.train()
+
+# Note: `/health` is served by `api.main` as a top-level liveness endpoint.
