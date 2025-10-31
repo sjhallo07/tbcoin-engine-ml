@@ -1,0 +1,13 @@
+/* stylelint-disable at-rule-no-unknown */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+/* stylelint-enable at-rule-no-unknown */
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}

@@ -1,7 +1,11 @@
+fastapi>=0.100.0
+uvicorn[standard]
 Flask>=2.0
 solana
 python-dotenv
 requests
+# Test/runtime helpers
+pytest
 fastapi==0.104.1
 uvicorn==0.24.0
 solana==0.30.0

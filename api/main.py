@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import os
+import requests
+from fastapi import HTTPException
 
 # Basic logger for startup/liveness messages
 logger = logging.getLogger("tbcoin")
@@ -120,4 +123,64 @@ async def status():
             "status": "running" if autonomous_agent and getattr(autonomous_agent, "is_running", False) else "stopped"
         }
     }
+
+
+@app.get("/messages")
+async def messages():
+    """Simple test endpoint returning sample messages for integration tests.
+
+    Returns a small JSON payload so external HTTP tests (or local TestClient)
+    can verify reachability and JSON parsing.
+    """
+    sample = {
+        "messages": [
+            {"id": 1, "text": "Hello from TB Coin API"},
+            {"id": 2, "text": "This is a test message"}
+        ]
+    }
+    # Also log a small startup/info line for visibility in container logs
+    logger.info("/messages requested - returning %d messages", len(sample["messages"]))
+    return sample
+
+
+@app.get("/relay")
+def relay(message: str | None = None, target: str | None = None):
+    """Receive a message via GET and forward it as a POST to a target URL.
+
+    Query parameters:
+      - message: the message text to forward
+      - target: optional override target POST URL (default from TEST_POST_URL env)
+
+    Safety: honors SIMULATE_HTTP_POST env var (true/false). When simulation is
+    enabled (default true) the endpoint will not perform the external POST and
+    will instead return the payload and target for inspection.
+    """
+    target_url = target or os.getenv("TEST_POST_URL", "http://127.0.0.1:3000/messages")
+    payload = {"message": message}
+
+    simulate = os.getenv("SIMULATE_HTTP_POST", "true").lower() in ("1", "true", "yes")
+    logger.info("/relay requested - simulate=%s target=%s", simulate, target_url)
+
+    if simulate:
+        return {"simulated": True, "target": target_url, "payload": payload}
+
+    # Perform real POST
+    try:
+        resp = requests.post(target_url, json=payload, timeout=10)
+    except Exception as exc:
+        logger.error("/relay post to %s failed: %s", target_url, exc)
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    # Attempt to parse JSON response when appropriate
+    content_type = resp.headers.get("Content-Type", "")
+    body: object
+    try:
+        if "application/json" in content_type:
+            body = resp.json()
+        else:
+            body = resp.text
+    except Exception:
+        body = resp.text
+
+    return {"simulated": False, "status_code": resp.status_code, "response": body}
 
