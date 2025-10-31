@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { TokenAnalysisDashboard } from '../components/TokenAnalysisDashboard'
 
 export default function Home() {
   const [solana, setSolana] = useState(null)
@@ -126,6 +127,12 @@ export default function Home() {
 
           <div className="mt-6 text-xs text-slate-500">
             These endpoints are served from the Next.js app's `app/api` routes. Use the Refresh button to re-query.
+          </div>
+
+          <div className="mt-10">
+            <h2 className="text-xl font-semibold mb-3">Advanced Token Analysis</h2>
+            <p className="text-sm text-slate-600 mb-4">Run the autonomous token risk profiler against any Solana mint.</p>
+            <TokenAnalysisDashboard defaultMint="FyR7KcKwC2V1o1TDi1Vz1a64pE1Rx5SrwwnJocNbhgFE" />
           </div>
         </main>
       </div>

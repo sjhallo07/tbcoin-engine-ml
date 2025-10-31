@@ -1,4 +1,4 @@
-const assert = require('assert')
+import { strictEqual, ok } from 'assert'
 
 async function fetchJson(path) {
   const url = `http://localhost:3001${path}`
@@ -18,16 +18,16 @@ async function main() {
   console.log('Running endpoint tests against http://localhost:3001 ...')
   try {
     const sol = await fetchJson('/api/solana/price')
-    assert.strictEqual(sol.status, 'success', 'solana status')
-    assert.ok(sol.data.price !== undefined, 'sol price present')
+    strictEqual(sol.status, 'success', 'solana status')
+    ok(sol.data.price !== undefined, 'sol price present')
 
     const tb = await fetchJson('/api/tbcoin/data')
-    assert.strictEqual(tb.status, 'success', 'tbcoin status')
-    assert.ok(tb.data.holders !== undefined, 'tbcoin holders present')
+    strictEqual(tb.status, 'success', 'tbcoin status')
+    ok(tb.data.holders !== undefined, 'tbcoin holders present')
 
     const post = await testPost('/api/solana/test', { action: 'test', symbol: 'SOL' })
-    assert.strictEqual(post.status, 'success', 'post status')
-    assert.strictEqual(post.data.processed, true, 'post processed')
+    strictEqual(post.status, 'success', 'post status')
+    strictEqual(post.data.processed, true, 'post processed')
 
     console.log('All endpoint tests passed ✅')
     process.exit(0)
