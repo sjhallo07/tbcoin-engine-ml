@@ -82,7 +82,19 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-white rounded shadow">
-              <h2 className="text-lg font-medium">Solana</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-medium">
+                  {solana?.display?.name || 'Solana'}
+                  {solana?.display?.symbol ? ` (${solana.display.symbol})` : ''}
+                </h2>
+                {solana?.display?.logo && (
+                  <img
+                    src={solana.display.logo}
+                    alt={solana.display.name || 'Solana'}
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                )}
+              </div>
               {solana ? (
                 <dl className="mt-3 space-y-2">
                   <div className="flex justify-between"><dt className="text-sm text-slate-600">Price</dt><dd className="font-mono">${solana.price}</dd></div>

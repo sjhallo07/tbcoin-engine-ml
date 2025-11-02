@@ -1,24 +1,14 @@
-import { NextResponse } from 'next/server';
-import sol from '../../../../../lib/solana-client';
+import { NextResponse } from 'next/server'
+
+import { fetchTokenProfile } from '../../../../../services/token-analysis'
 
 export async function GET(request: Request, { params }: { params: { mint: string } }) {
-  const { mint } = params;
-  try {
-    const supply = await sol.getTokenSupply(mint);
-    const largest = await sol.getTokenLargestAccounts(mint);
-    const metadata = await sol.getTokenMetadata(mint);
+  const { mint } = params
 
-    return NextResponse.json({
-      basicInfo: {
-        mintAddress: mint,
-        decimals: supply?.decimals ?? null,
-        totalSupply: supply?.amount ?? null,
-        totalSupplyUi: supply?.uiAmountString ?? null,
-        topAccounts: largest?.slice(0, 10) ?? []
-      },
-      metadata
-    });
-  } catch (err: any) {
-    return NextResponse.json({ error: String(err.message || err) }, { status: 500 });
+  try {
+    const profile = await fetchTokenProfile(mint)
+    return NextResponse.json(profile)
+  } catch (error: any) {
+    return NextResponse.json({ error: String(error?.message || error) }, { status: 500 })
   }
 }
