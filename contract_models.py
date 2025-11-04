@@ -1,4 +1,7 @@
 # models/contract_models.py
+# NOTE: These models are for future phases and are not part of Phase 1 schema.
+# They are not currently used in the application.
+
 from sqlalchemy import Column, Integer, String, DateTime, JSON, Text
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
@@ -7,6 +10,7 @@ import uuid
 Base = declarative_base()
 
 class ContractDeployment(Base):
+    """Contract deployment model - Reserved for future phases."""
     __tablename__ = "contract_deployments"
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -22,6 +26,7 @@ class ContractDeployment(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
 class ContractInteraction(Base):
+    """Contract interaction model - Reserved for future phases."""
     __tablename__ = "contract_interactions"
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -38,6 +43,7 @@ class ContractInteraction(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
 class ChainEvent(Base):
+    """Chain event model - Reserved for future phases."""
     __tablename__ = "chain_events"
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
