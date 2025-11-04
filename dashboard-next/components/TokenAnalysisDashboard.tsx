@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 type RiskReport = {
   overall: number;
@@ -95,6 +95,7 @@ export function TokenAnalysisDashboard({ defaultMint = '' }: Props) {
   const [intelLoading, setIntelLoading] = useState(false);
   const [intelError, setIntelError] = useState<string | null>(null);
   const [intelFetchedAt, setIntelFetchedAt] = useState<string | null>(null);
+  const [originOverride, setOriginOverride] = useState<string>('http://localhost:3000');
 
   const sentimentColor = useMemo(() => {
     if (!report) return 'text-slate-500';
@@ -103,7 +104,13 @@ export function TokenAnalysisDashboard({ defaultMint = '' }: Props) {
     return 'text-rose-600';
   }, [report]);
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOriginOverride(window.location.origin);
+    }
+  }, []);
+
+  const origin = originOverride;
 
   const buildQuery = (tokens: IntelToken[]) =>
     tokens
