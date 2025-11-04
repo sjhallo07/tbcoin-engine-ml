@@ -1,4 +1,11 @@
-name: AI_Workflow_Supervised_NonSupervised
+ on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main name: AI_Workflow_Supervised_NonSupervised
 
 on:
   push:
