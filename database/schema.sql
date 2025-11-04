@@ -1,4 +1,4 @@
--- database/init.sql
+-- database/schema.sql
 -- Phase 1 Database Schema
 
 -- Transactions table
