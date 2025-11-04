@@ -172,6 +172,9 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# (Optional) install ML extras
+pip install -r requirements-ml.txt
 ```
 
 3. **Configure environment variables**
@@ -201,6 +204,24 @@ docker-compose logs -f
 # Stop services
 docker-compose down
 ```
+
+### CoinGecko Demo API
+
+- Set `COINGECKO_DEMO_API_KEY` in your environment (or edit the placeholder inside `examples/coingecko_demo.py`) to authenticate requests against the CoinGecko public demo plan at `https://api.coingecko.com/api/v3/`.
+- Export the demo key (Windows PowerShell example): `setx COINGECKO_DEMO_API_KEY "CG-icu2MHGS8bkS3maLooybpAQP"`.
+- Verify the REST endpoint directly via curl:
+  ```powershell
+  curl --request GET `
+    --url https://api.coingecko.com/api/v3/ping `
+    --header 'x-cg-demo-api-key: CG-icu2MHGS8bkS3maLooybpAQP'
+  ```
+- Run `python examples/coingecko_demo.py` to print the top market-cap coins using the required `x-cg-demo-api-key` header and the `/coins/markets` endpoint.
+- Use the script as a template for integrating CoinGecko demo responses while keeping secrets out of source control.
+- For detailed per-asset metadata and market data, run `python examples/coingecko_coin_details.py [coin_id]` (defaults to `bitcoin`) which hits `/coins/{id}` and prints core fields.
+- Explore onchain Solana/Polygon endpoints with `python examples/coingecko_onchain_demo.py <network> <command> [...]` (e.g., `solana multi <addr1> <addr2>` or `polygon-pos new-pools`); this script covers `/onchain/networks/{network}/tokens/multi`, `/tokens/{address}/info`, and `/new_pools` using the demo plan rate limits.
+- Verify CoinGecko Pro service availability with `python examples/coingecko_ping.py`, which calls `/ping` via the official SDK using the `COINGECKO_PRO_API_KEY` environment variable.
+- See `docs/coingecko_ai_building.md` for AI-integration tips covering llms guidance, MCP server setup, and documentation tooling.
+- See `docs/coingecko-onchain-metadata.md` for endpoint descriptions, sample commands, and metadata fields (websites, socials, GT Scores, holders distribution) available via the onchain demo API.
 
 ### Serverless Deployment (AWS Lambda)
 

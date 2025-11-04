@@ -42,11 +42,59 @@ type Props = {
   defaultMint?: string;
 };
 
+type TokenIntelResponse = {
+  tokens: Array<{
+    address: string;
+    network: 'solana' | 'ethereum' | 'polygon';
+    name: string;
+    symbol: string;
+    creator: string | null;
+    createdAt: number;
+    totalSupply: number;
+    proofMechanism: 'pow' | 'pos';
+    risk: {
+      score: number;
+      level: string;
+      breakdown?: Record<string, number>;
+    };
+    liquidity: {
+      liquidUSD: number;
+      frozenUSD: number;
+      flag: 'green' | 'orange' | 'red';
+    };
+    summary: string;
+    rankingScore: number;
+  }>;
+  ranking: string[];
+};
+
+type IntelToken = {
+  address: string;
+  network: 'solana' | 'ethereum' | 'polygon';
+};
+
+const DEMO_TOKENS: IntelToken[] = [
+  { address: 'So11111111111111111111111111111111111111112', network: 'solana' },
+  { address: '0xC02aaA39b223FE8D0A0E5C4F27eAD9083C756Cc2', network: 'ethereum' },
+  { address: '0x0000000000000000000000000000000000001010', network: 'polygon' },
+];
+
+const FLAG_CLASSES: Record<'green' | 'orange' | 'red', string> = {
+  green: 'bg-emerald-500/10 text-emerald-400 border-emerald-400/40',
+  orange: 'bg-amber-500/10 text-amber-300 border-amber-400/40',
+  red: 'bg-rose-500/10 text-rose-300 border-rose-400/40',
+};
+
 export function TokenAnalysisDashboard({ defaultMint = '' }: Props) {
   const [mint, setMint] = useState(defaultMint);
   const [report, setReport] = useState<RiskReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [intel, setIntel] = useState<TokenIntelResponse | null>(null);
+  const [intelTokens, setIntelTokens] = useState<IntelToken[]>(DEMO_TOKENS);
+  const [intelLoading, setIntelLoading] = useState(false);
+  const [intelError, setIntelError] = useState<string | null>(null);
+  const [intelFetchedAt, setIntelFetchedAt] = useState<string | null>(null);
 
   const sentimentColor = useMemo(() => {
     if (!report) return 'text-slate-500';
@@ -54,6 +102,27 @@ export function TokenAnalysisDashboard({ defaultMint = '' }: Props) {
     if (report.overall < 7) return 'text-amber-500';
     return 'text-rose-600';
   }, [report]);
+
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+
+  const buildQuery = (tokens: IntelToken[]) =>
+    tokens
+      .map((token) => `token=${encodeURIComponent(`${token.network}:${token.address}`)}`)
+      .join('&');
+
+  const curlGetSnippet = useMemo(() => {
+    const query = buildQuery(intelTokens);
+    return `curl "${origin}/api/token/analysis${query ? `?${query}` : ''}"`;
+  }, [intelTokens, origin]);
+
+  const curlPostSnippet = useMemo(() => {
+    const payload = JSON.stringify({ tokens: intelTokens }, null, 2).replace(/"/g, '\"');
+    return [
+      `curl -X POST "${origin}/api/token/analysis"`,
+      '  -H "Content-Type: application/json"',
+      `  -d "${payload}"`,
+    ].join('\n');
+  }, [intelTokens, origin]);
 
   const analyzeToken = async () => {
     const trimmed = mint.trim();
@@ -73,6 +142,38 @@ export function TokenAnalysisDashboard({ defaultMint = '' }: Props) {
       setReport(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchIntel = async () => {
+    setIntelLoading(true);
+    setIntelError(null);
+    try {
+      const query = buildQuery(intelTokens.length ? intelTokens : DEMO_TOKENS);
+      const res = await fetch(`/api/token/analysis${query ? `?${query}` : ''}`);
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      const json = await res.json();
+      if (Array.isArray(json?.tokens) && json.tokens.length) {
+        const parsedTokens = json.tokens
+          .map((token: any) => ({
+            address: String(token.address ?? token.mint ?? ''),
+            network: String(token.network ?? 'solana').toLowerCase(),
+          }))
+          .filter(
+            (token: any): token is IntelToken =>
+              token.address.length >= 8 && ['solana', 'ethereum', 'polygon'].includes(token.network),
+          );
+        if (parsedTokens.length) {
+          setIntelTokens(parsedTokens);
+        }
+      }
+      setIntel(json?.data ?? null);
+      setIntelFetchedAt(new Date().toISOString());
+    } catch (err) {
+      setIntelError((err as Error).message);
+      setIntel(null);
+    } finally {
+      setIntelLoading(false);
     }
   };
 
@@ -166,6 +267,121 @@ export function TokenAnalysisDashboard({ defaultMint = '' }: Props) {
           </div>
         </div>
       )}
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Token Intelligence Snapshot</h3>
+            <p className="text-sm text-slate-600">
+              Fetch aggregated risk, liquidity, and ranking insights through the `/api/token/analysis` endpoint.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={fetchIntel}
+              disabled={intelLoading}
+              className="rounded border border-indigo-200 bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {intelLoading ? 'Fetching…' : 'Fetch Demo Tokens'}
+            </button>
+          </div>
+        </div>
+
+        {intelError && (
+          <div className="mt-4 rounded border border-rose-300 bg-rose-50 p-3 text-sm text-rose-700">
+            {intelError}
+          </div>
+        )}
+
+        {intel && (
+          <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <h4 className="text-sm font-semibold text-slate-700">Ranking Order</h4>
+              <ol className="mt-3 space-y-2 text-sm text-slate-600">
+                {intel.ranking.map((address, idx) => {
+                  const token = intel.tokens.find((item) => item.address === address);
+                  return (
+                    <li key={address} className="flex items-center justify-between gap-3">
+                      <span className="font-medium text-slate-700">#{idx + 1}</span>
+                      <div className="flex-1">
+                        <p className="font-medium text-slate-800">{token?.name ?? address.slice(0, 6)}</p>
+                        <p className="text-xs uppercase text-slate-500">{token?.network ?? 'unknown'}</p>
+                      </div>
+                      <span className="font-mono text-xs text-slate-500">{token?.risk?.level?.toUpperCase() ?? '—'}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+              <p className="mt-4 text-xs text-slate-500">
+                Last fetched: {intelFetchedAt ? new Date(intelFetchedAt).toLocaleTimeString() : '—'}
+              </p>
+            </div>
+
+            <div className="xl:col-span-2 space-y-4">
+              {intel.tokens.map((token) => (
+                <div
+                  key={`${token.network}:${token.address}`}
+                  className="rounded-2xl border border-slate-200 p-4 shadow-sm"
+                >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h4 className="text-base font-semibold text-slate-900">
+                        {token.name ?? token.address.slice(0, 6)}{' '}
+                        <span className="text-sm text-slate-500">({token.symbol ?? '—'})</span>
+                      </h4>
+                      <p className="text-xs text-slate-500">{token.network.toUpperCase()} · Risk {token.risk.level.toUpperCase()}</p>
+                    </div>
+                    <span
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${FLAG_CLASSES[token.liquidity.flag]}`}
+                    >
+                      Liquidity flag: {token.liquidity.flag}
+                    </span>
+                  </div>
+                  <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <p>
+                        Risk score:{' '}
+                        <span className="font-semibold text-slate-900">
+                          {Number(token.risk.score ?? 0).toFixed(2)}
+                        </span>
+                      </p>
+                      <p>
+                        Ranking score:{' '}
+                        <span className="font-semibold text-slate-900">
+                          {Number(token.rankingScore ?? 0).toFixed(2)}
+                        </span>
+                      </p>
+                      <p>
+                        Proof: <span className="font-semibold uppercase text-slate-900">{token.proofMechanism}</span>
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p>
+                        Liquid USD: <span className="font-mono">${token.liquidity.liquidUSD.toLocaleString()}</span>
+                      </p>
+                      <p>
+                        Frozen USD: <span className="font-mono">${token.liquidity.frozenUSD.toLocaleString()}</span>
+                      </p>
+                      <p className="text-xs text-slate-500">{token.summary}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <h4 className="text-sm font-semibold text-slate-700">GET via curl</h4>
+            <pre className="mt-2 overflow-x-auto rounded bg-slate-900/90 p-3 text-xs text-slate-100">{curlGetSnippet}</pre>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <h4 className="text-sm font-semibold text-slate-700">POST via curl</h4>
+            <pre className="mt-2 whitespace-pre-wrap overflow-x-auto rounded bg-slate-900/90 p-3 text-xs text-slate-100">{curlPostSnippet}</pre>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

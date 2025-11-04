@@ -149,6 +149,34 @@ function safeNumber(value: unknown, fallback = 0): number {
   return fallback
 }
 
+const PUBLIC_API_RETRY_DELAYS = [0, 1000, 2000, 3000, 4000, 5000]
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function fetchJsonFromPublicApi(url: string, label: string, options?: RequestInit) {
+  let lastError: unknown = null
+
+  for (let attempt = 0; attempt < PUBLIC_API_RETRY_DELAYS.length; attempt += 1) {
+    const delayMs = PUBLIC_API_RETRY_DELAYS[attempt]
+    if (delayMs > 0) await wait(delayMs)
+
+    try {
+      const response = await fetch(url, options)
+      if (response.ok) {
+        return await response.json()
+      }
+      lastError = new Error(`HTTP ${response.status}`)
+    } catch (error) {
+      lastError = error
+    }
+  }
+
+  console.warn(`[token-analysis] ${label} failed after retries`, lastError)
+  return null
+}
+
 export async function fetchTokenProfile(mint: string): Promise<TokenProfile> {
   const [supply, metadata, accountInfo] = await Promise.all([
     getTokenSupply(mint).catch(() => null),
@@ -214,9 +242,11 @@ async function identifyProgramAccounts(addresses: string[]): Promise<Record<stri
 
 async function fetchRecentTransfers(mint: string): Promise<HolderAnalysis['whaleAnalysis']['recentLargeTransfers'] | null> {
   try {
-    const res = await fetch(`https://public-api.solscan.io/account/splTransfers?address=${mint}&limit=5`)
-    if (!res.ok) return null
-    const payload = await res.json()
+    const payload = await fetchJsonFromPublicApi(
+      `https://public-api.solscan.io/account/splTransfers?address=${mint}&limit=5`,
+      'recent transfer lookup'
+    )
+    if (!payload) return null
     const transfers = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : []
     return transfers.map((transfer: any) => ({
       signature: transfer.txHash ?? transfer.signature ?? '',
@@ -289,9 +319,11 @@ export async function fetchHolderAnalysis(mint: string, profile?: TokenProfile):
 
 async function fetchDexscreenerPairs(mint: string) {
   try {
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`)
-    if (!res.ok) return []
-    const payload = await res.json()
+    const payload = await fetchJsonFromPublicApi(
+      `https://api.dexscreener.com/latest/dex/tokens/${mint}`,
+      'dex screener lookup'
+    )
+    if (!payload) return []
     const pairs = Array.isArray(payload?.pairs) ? payload.pairs : []
     return pairs
   } catch (error) {

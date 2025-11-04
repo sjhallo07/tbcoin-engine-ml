@@ -1,6 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+type TokenDisplay = {
+  name: string;
+  symbol: string;
+  logo: string | null;
+};
+
+type SolanaOverview = {
+  price: number;
+  change24h: number;
+  marketCap: number;
+  volume24h: number;
+  timestamp: string;
+  display?: TokenDisplay;
+};
 
 type MarketAnalysis = {
   status: string;
@@ -43,11 +58,27 @@ type PerformanceResponse = {
 };
 
 export function AIDashboard() {
+  const [solanaOverview, setSolanaOverview] = useState<SolanaOverview | null>(null);
   const [marketAnalysis, setMarketAnalysis] = useState<MarketAnalysis | null>(null);
   const [predictions, setPredictions] = useState<PredictionResponse | null>(null);
   const [performance, setPerformance] = useState<PerformanceResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSolanaOverview = async () => {
+      try {
+        const res = await fetch('/api/solana/price');
+        if (!res.ok) throw new Error(`Failed to load Solana price (${res.status})`);
+        const json = await res.json();
+        setSolanaOverview(json.data ?? null);
+      } catch (err) {
+        console.warn('[AIDashboard] Failed to fetch Solana price overview', err);
+      }
+    };
+
+    fetchSolanaOverview();
+  }, []);
 
   const testAISystem = async () => {
     setLoading(true);
@@ -97,6 +128,45 @@ export function AIDashboard() {
       {error && <div className="p-3 bg-rose-100 border border-rose-300 text-rose-800">{error}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="p-4 border rounded-lg bg-white shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-lg">
+                {solanaOverview?.display?.name ?? 'Solana'}
+                {solanaOverview?.display?.symbol ? ` (${solanaOverview.display.symbol})` : ''}
+              </h3>
+              <p className="text-xs text-slate-500">
+                Updated: {solanaOverview ? new Date(solanaOverview.timestamp).toLocaleString() : '—'}
+              </p>
+            </div>
+            {solanaOverview?.display?.logo && (
+              <img
+                src={solanaOverview.display.logo}
+                alt={solanaOverview.display.name ?? 'Solana'}
+                className="h-10 w-10 rounded-full object-cover"
+              />
+            )}
+          </div>
+          {solanaOverview ? (
+            <dl className="mt-3 space-y-1 text-sm text-slate-600">
+              <div className="flex justify-between">
+                <dt>Price</dt>
+                <dd className="font-mono">${solanaOverview.price.toFixed(2)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>24h Change</dt>
+                <dd className="font-mono">{solanaOverview.change24h}%</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Market Cap</dt>
+                <dd className="font-mono">${solanaOverview.marketCap.toLocaleString()}</dd>
+              </div>
+            </dl>
+          ) : (
+            <p className="mt-3 text-sm text-slate-500">Fetching Solana price overview…</p>
+          )}
+        </div>
+
         <div className="p-4 border rounded-lg bg-white shadow-sm">
           <h3 className="font-semibold text-lg">🧠 Market Analysis</h3>
           {marketAnalysis ? (

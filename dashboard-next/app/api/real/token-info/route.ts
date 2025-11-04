@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getMint } from '@solana/spl-token'
+import type { ParsedAccountData } from '@solana/web3.js'
 
 import { createSolanaConnection, toPublicKey } from '../../../../services/solana-utils'
 
@@ -17,41 +17,58 @@ export async function POST(request: Request) {
     const connection = createSolanaConnection('confirmed')
     const mintKey = toPublicKey(mintAddress)
 
-    const [mintInfo, largestAccounts] = await Promise.all([
-      getMint(connection, mintKey),
-      connection.getTokenLargestAccounts(mintKey)
-    ])
+  const [mintAccountInfo, largestAccounts] = await Promise.all([
+    connection.getParsedAccountInfo(mintKey),
+    connection.getTokenLargestAccounts(mintKey)
+  ])
 
-    const decimals = mintInfo.decimals
-    const supply = mintInfo.supply
+  if (!mintAccountInfo.value) {
+    throw new Error('Mint account not found')
+  }
 
-  const totalSupplyUi = Number(mintInfo.supply) / Math.pow(10, decimals)
+  const accountData = mintAccountInfo.value.data
 
-    const holders = largestAccounts.value.slice(0, 5).map((account) => {
-      const uiAmount = Number(account.uiAmountString ?? account.uiAmount ?? 0)
-      const percentage = totalSupplyUi > 0 ? Number(((uiAmount / totalSupplyUi) * 100).toFixed(4)) : 0
+  if (!accountData || typeof accountData !== 'object' || !('parsed' in accountData)) {
+    throw new Error('Unable to parse mint account data')
+  }
 
-      return {
-        address: account.address.toBase58(),
-        amountRaw: account.amount,
-        uiAmount,
-        percentage
-      }
-    })
+  const parsedInfo = (accountData as ParsedAccountData).parsed.info as {
+    decimals: number
+    supply: string
+    mintAuthority: string | null
+    freezeAuthority: string | null
+    isInitialized: boolean
+  }
 
-    return NextResponse.json({
-      status: 'success',
-      data: {
-        mint: mintAddress,
-        decimals,
-        supply: supply.toString(),
-        mintAuthority: mintInfo.mintAuthority?.toBase58?.() || null,
-        freezeAuthority: mintInfo.freezeAuthority?.toBase58?.() || null,
-        largestHolders: holders,
-        isInitialized: mintInfo.isInitialized
-      },
-      message: 'Real token information fetched successfully'
-    })
+  const { decimals, supply, mintAuthority, freezeAuthority, isInitialized } = parsedInfo
+
+  const holders = (largestAccounts.value ?? []).map((account) => {
+    const amount = Number(account.amount)
+    const supplyNumber = Number(supply) || 0
+    const uiAmount = amount / Math.pow(10, decimals)
+    const percentage = supplyNumber > 0 ? amount / supplyNumber : 0
+
+    return {
+      address: account.address?.toBase58?.() ?? String(account.address),
+      amountRaw: account.amount,
+      uiAmount,
+      percentage
+    }
+  })
+
+  return NextResponse.json({
+    status: 'success',
+    data: {
+      mint: mintAddress,
+      decimals,
+      supply,
+      mintAuthority,
+      freezeAuthority,
+      largestHolders: holders,
+      isInitialized
+    },
+    message: 'Real token information fetched successfully'
+  })
   } catch (error: any) {
     console.error('[real-token-info] error', error)
     return NextResponse.json({
