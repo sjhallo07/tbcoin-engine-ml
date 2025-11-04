@@ -25,14 +25,18 @@ from config import config
 
 # Importar routers existentes
 try:
-    from api.endpoints import blockchain_data, blockchain_gateway
+    from api.endpoints import blockchain_data
+except Exception:
+    blockchain_data = None
+
+# Import blockchain_gateway separately (may not exist yet)
+try:
+    from api.endpoints import blockchain_gateway  # type: ignore
 except Exception:
     # Fallback: try to import from app.api if present
     try:
-        from app.api import coins as blockchain_data  # type: ignore
         from app.api import transactions as blockchain_gateway  # type: ignore
     except Exception:
-        blockchain_data = None
         blockchain_gateway = None
 
 # NEW - Importar autonomous agent routes

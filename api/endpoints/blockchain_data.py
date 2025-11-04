@@ -1,30 +1,43 @@
 # api/endpoints/blockchain_data.py
+"""Blockchain data access endpoints"""
 from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import asyncio
 import logging
 
+# Import services
+from app.services.blockchain_service import blockchain_service
+from app.services.analytics_service import analytics_service
+from app.services.ml_service import ml_service
+
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/v1/blockchain", tags=["blockchain-data"])
 
+
 class TransactionQuery(BaseModel):
+    """Transaction query parameters"""
     wallet_address: Optional[str] = None
     start_time: Optional[int] = None
     end_time: Optional[int] = None
     limit: int = 1000
     offset: int = 0
 
+
 class ModelPredictionRequest(BaseModel):
+    """Model prediction request"""
     features: Dict[str, Any]
     model_type: str = "price_movement"
 
+
 @router.get("/transactions")
 async def get_transactions(
-    wallet_address: Optional[str] = Query(None),
-    start_time: Optional[int] = Query(None),
-    end_time: Optional[int] = Query(None),
-    limit: int = Query(1000, le=10000),
-    offset: int = Query(0)
+    wallet_address: Optional[str] = Query(None, description="Filter by wallet address"),
+    start_time: Optional[int] = Query(None, description="Start timestamp"),
+    end_time: Optional[int] = Query(None, description="End timestamp"),
+    limit: int = Query(1000, le=10000, description="Maximum number of transactions"),
+    offset: int = Query(0, description="Pagination offset")
 ):
     """Get transaction data for analysis"""
     try:
@@ -41,8 +54,9 @@ async def get_transactions(
             "count": len(transactions)
         }
     except Exception as e:
-        logging.error(f"Error fetching transactions: {e}")
+        logger.error(f"Error fetching transactions: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @router.get("/wallet/{wallet_address}/behavior")
 async def get_wallet_behavior(wallet_address: str):
@@ -55,8 +69,9 @@ async def get_wallet_behavior(wallet_address: str):
             "behavior_metrics": behavior_data
         }
     except Exception as e:
-        logging.error(f"Error analyzing wallet behavior: {e}")
+        logger.error(f"Error analyzing wallet behavior: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @router.post("/predict")
 async def make_prediction(request: ModelPredictionRequest):
@@ -72,8 +87,9 @@ async def make_prediction(request: ModelPredictionRequest):
             "model_used": request.model_type
         }
     except Exception as e:
-        logging.error(f"Prediction error: {e}")
+        logger.error(f"Prediction error: {e}")
         raise HTTPException(status_code=500, detail="Prediction failed")
+
 
 @router.get("/model/metrics")
 async def get_model_metrics():
@@ -85,5 +101,5 @@ async def get_model_metrics():
             "metrics": metrics
         }
     except Exception as e:
-        logging.error(f"Error fetching model metrics: {e}")
+        logger.error(f"Error fetching model metrics: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
