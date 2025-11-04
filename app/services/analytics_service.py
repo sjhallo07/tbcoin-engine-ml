@@ -1,5 +1,5 @@
 """Analytics service for wallet behavior analysis"""
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import logging
 
 logger = logging.getLogger(__name__)
