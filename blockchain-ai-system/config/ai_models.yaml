@@ -1,0 +1,19 @@
+price_prediction:
+  model_type: lstm
+  training_interval: 24h
+  features:
+    - gas_price
+    - transaction_count
+    - token_velocity
+    - active_address_growth
+  lookback_window: 30
+  forecast_horizon: 1
+  mae_target: 0.02
+  retrain_threshold: 0.005
+risk_assessment:
+  ensemble_members:
+    - random_forest
+    - xgboost
+    - lstm
+  drift_detection_window: 1000
+  alert_threshold: 0.7
