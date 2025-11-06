@@ -1,10 +1,1 @@
-{
-  "dependencies": {
-    "next": "^16.0.1",
-    "recharts": "^3.3.0"
-  },
-  "devDependencies": {
-    "@types/node": "^24.10.0",
-    "@types/recharts": "^1.8.29"
-  }
-}
+{}

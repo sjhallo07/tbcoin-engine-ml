@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # Existing services
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/tbcoin
+      - REDIS_URL=redis://redis:6379
+      - AI_AGENT_ENABLED=true
+      - AI_TRADING_ENABLED=false
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+    depends_on:
+      - db
+      - redis
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # NEW - Autonomous Agent Service
+  autonomous-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.ibm
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/tbcoin
+      - REDIS_URL=redis://redis:6379
+      - SOLANA_RPC_URL=https://api.devnet.solana.com
+      - AI_AGENT_ENABLED=true
+      - AI_TRADING_ENABLED=false
+      - AUTONOMOUS_TRADING_PRIVATE_KEY=${AUTONOMOUS_TRADING_PRIVATE_KEY}
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+    depends_on:
+      - db
+      - redis
+      - mlflow
+    command: python -m agents.autonomous_agent
+    restart: unless-stopped
+
+  # NEW - ML Worker Service
+  ml-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.ml.ibm
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/tbcoin
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    volumes:
+      - ./models:/app/models
+      - ./training_data:/app/training_data
+    depends_on:
+      - db
+      - mlflow
+    command: python -m services.ml_worker
+    deploy:
+      replicas: 2
+
+  # Existing database services
+  db:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_DB=tbcoin
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # NEW - ML Flow for model tracking
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+    volumes:
+      - mlflow_data:/mlruns
+    depends_on:
+      - minio
+
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio123
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+  # Monitoring (Existing + Enhanced)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/autonomous_agent_rules.yml:/etc/prometheus/rules.yml
+
+volumes:
+  postgres_data:
+  redis_data:
+  mlflow_data:
+  minio_data:

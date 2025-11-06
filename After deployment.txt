@@ -1,0 +1,4 @@
+🎉 TB Coin Successfully Deployed!
+🌐 API URL: https://tbcoin-api.xxxxxx.us-south.codeengine.appdomain.cloud
+📚 API Docs: https://tbcoin-api.xxxxxx.us-south.codeengine.appdomain.cloud/docs  
+❤️  Health Check: https://tbcoin-api.xxxxxx.us-south.codeengine.appdomain.cloud/health

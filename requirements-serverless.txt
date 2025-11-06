@@ -1,0 +1,2 @@
+# Serverless deployment dependencies
+mangum==0.17.0

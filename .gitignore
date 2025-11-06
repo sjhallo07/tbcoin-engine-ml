@@ -1,35 +1,78 @@
 # Python
 __pycache__/
 *.pyc
+*.py[cod]
+*$py.class
 .pytest_cache/
 .mypy_cache/
 .coverage*
+.coverage
 coverage*/
+htmlcov/
+.tox/
 
 # Virtual environments
 .venv/
 venv/
 env/
+ENV/
+env.bak/
+venv.bak/
 
 # Build artifacts
 build/
 dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
 # Node / Frontend
 node_modules/
 .next/
 *.log
 
-# OS/editor
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE/editor
 .DS_Store
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
 
 # Env/Secrets
 .env
 .env.*
+.env.local
+.env.template
 
 # Project
 logs/
 .ipynb_checkpoints/
+models/
+*.pth
+*.pt
+*.onnx
+
+# Temp
+tmp/
+temp/
+*.tmp
+Thumbs.db

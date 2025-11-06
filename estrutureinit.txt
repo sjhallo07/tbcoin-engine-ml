@@ -1,0 +1,17 @@
+Phase 1: Supervised Learning Foundation
+├── Blockchain Data Ingestion
+│   ├── Solana Web3 Event Listeners
+│   ├── Transaction & Log Processing
+│   └── Real-time Data Streaming
+├── Data Processing & Feature Engineering
+│   ├── Pattern Recognition Pipeline
+│   ├── Wallet Behavior Analysis
+│   └── Market Signal Extraction
+├── Supervised Learning Models
+│   ├── Transaction Classification
+│   ├── Price Movement Prediction
+│   └── Anomaly Detection
+└── Scalable Data Storage
+    ├── Time-Series Data (Transactions)
+    ├── Feature Store (ML Ready)
+    └── Model Artifacts & Metadata

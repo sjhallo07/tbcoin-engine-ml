@@ -1,0 +1,27 @@
+# ibm-cloud/code-engine/ml-worker-app.yaml
+apiVersion: codeengine.cloud.ibm.com/v2
+kind: App
+metadata:
+  name: tbcoin-ml-worker
+spec:
+  image: us-south.icr.io/tbcoin-registry/tbcoin-ml-worker:v1.0.0
+  runAsUser: 1001
+  runAsNonRoot: true
+  scale:
+    min: 1
+    max: 2
+    target: 70
+  resources:
+    cpu: 0.5
+    memory: 1G
+  env:
+    - name: DATABASE_URL
+      valueFrom:
+        secretKeyRef:
+          name: tbcoin-secrets
+          key: database-url
+    - name: REDIS_URL
+      valueFrom:
+        secretKeyRef:
+          name: tbcoin-secrets
+          key: redis-url

@@ -1,0 +1,457 @@
+# TB Coin Engine — Autonomous AI Trading Agent
+
+## Overview
+
+TB Coin Engine is a Python platform that integrates blockchain access, an autonomous AI trading agent, and ML-driven predictive components. It provides a FastAPI-based API, agent orchestrators, ML/diagnostics scaffolding, and optional Docker Compose manifests for local integration testing (TimescaleDB, Redis, MLflow, MinIO, Prometheus, Grafana).
+
+This repository is intended for development, experiments, and demonstration of safe-by-default autonomous trading patterns: analysis-only mode, guarded imports for optional ML/LLM libs, and KMS-backed signing recommendations for production.
+
+## Key Features
+
+- FastAPI API with health and status endpoints (`/health`, `/status`).
+- Autonomous agent scaffolding under `/api/v1/autonomous` (control, analyze, train).
+- Diagnostics using FastAPI `TestClient` for in-process checks.
+- Optional ML and tracking stack via `docker-compose.yml`.
+- Safe feature flags: `AI_AGENT_ENABLED`, `AI_TRADING_ENABLED`.
+
+## Quick start (development)
+
+1. Create virtual environment and activate it:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1   # Windows PowerShell
+# or: source .venv/bin/activate (macOS / Linux)
+```
+
+2. Install minimal dependencies:
+
+```powershell
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r requirements-minimal.txt
+```
+
+3. Run the API (foreground):
+
+```powershell
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+```
+
+4. Quick checks:
+
+```powershell
+Invoke-RestMethod 'http://127.0.0.1:8000/health' | ConvertTo-Json -Depth 5
+Invoke-RestMethod 'http://127.0.0.1:8000/status' | ConvertTo-Json -Depth 5
+```
+
+## Diagnostics
+
+- `diagnostics/test_health.py` uses FastAPI `TestClient` to validate `/health` and `/status` without starting a server.
+- `diagnostics/test_status.py` is an additional smoke test used previously.
+
+## Local observability
+
+- A module-level `tbcoin` logger is configured for local development to emit startup and health messages. For production, configure structured logging and a handler that forwards logs to your log aggregation system.
+- Use the included Prometheus/Grafana stack in `docker-compose.yml` for metrics and dashboards when running the full stack.
+
+## Configuration & Secrets
+
+- Use feature flags to control agent behavior:
+  - `AI_AGENT_ENABLED` — instantiate agent on startup
+  - `AI_TRADING_ENABLED` — allow execution of real trades (keep false during testing)
+- DO NOT commit real secrets. Use a secrets manager for production (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager). See `.env.template` for placeholders.
+
+## Docker Compose (optional)
+
+The `docker-compose.yml` includes services for API, autonomous-agent, TimescaleDB, Redis, MLflow, MinIO, Prometheus and Grafana. Start only after local validation and secret provisioning.
+
+## Contributing
+
+- Fork, create topic branches, run tests, and open a pull request. Include tests for new behavior and document configuration or secret requirements.
+
+## License
+
+See `LICENSE` in the repository root for license terms.
+
+## Contact
+
+- Use GitHub Issues for bugs and feature requests.
+# TB Coin Engine ML
+
+🚀 **AI-Powered Backend Engine for TB Coin Serverless Operations**
+
+A sophisticated backend system that leverages Machine Learning and Large Language Models (LLMs) to provide intelligent coin management, transaction processing, and automated decision-making for the TB Coin cryptocurrency platform.
+
+## 🌟 Features
+
+### Core Functionality
+- **Coin Management**: Complete balance tracking, staking, minting, and burning operations
+- **Transaction Processing**: Secure and efficient transaction handling with fee management
+- **ML-Powered Actions**: Intelligent decision-making using LLM integration
+
+### ML/AI Capabilities
+- 🤖 **LLM Integration**: OpenAI GPT-4 integration for intelligent recommendations
+- 📊 **Transaction Analysis**: AI-powered fraud detection and risk assessment
+- 💡 **Smart Recommendations**: Personalized portfolio optimization suggestions
+- 📈 **Market Predictions**: Trend analysis and forecasting
+- ⚡ **Transaction Optimization**: Intelligent parameter optimization for transactions
+
+### Deployment Options
+- **Local Development**: Run directly with Python/FastAPI
+- **Docker**: Containerized deployment with Docker Compose
+- **Serverless**: AWS Lambda-ready with Serverless Framework support
+- **Cloud-Native**: Kubernetes and cloud provider compatible
+
+## 🆕 New Services (Integration Complete)
+
+We integrated a set of new services to enable autonomous trading, model training, tracking, and enhanced monitoring. Integration is complete — the autonomous agent now runs alongside the core TB Coin services.
+
+- 🧠 Autonomous Agent: AI-powered autonomous trading agent that analyzes markets 24/7, makes multi-model recommendations (LLM + ML + RL), and can execute controlled trades.
+- 🤖 ML Worker: Background worker for model training, data processing, and batch jobs.
+- 📊 MLflow: Model tracking, experiments, and artifact storage (integrated via MinIO for local runs).
+- 📈 Enhanced Monitoring: Prometheus + Grafana dashboards and custom AI performance metrics.
+
+Workflow:
+- Continuous Analysis: The agent analyzes market data continuously and produces structured insights.
+- AI Decisions: Recommendations are produced by an ensemble of models (technical, LLM, and RL) with confidence & risk scoring.
+- Controlled Execution: Trades may be executed manually via the API or automatically when `AI_TRADING_ENABLED=true` and safety checks pass.
+- Continuous Learning: Periodic retraining and strategy evolution are performed automatically using historical performance and a strategy evolver.
+
+Status: Integration is complete — the new services are included in `docker-compose.yml` and can be run locally with Docker Compose.
+
+
+## 🏗️ Architecture
+
+```
+tbcoin-engine-ml/
+├── app/
+│   ├── api/              # API endpoints
+│   │   ├── coins.py      # Coin management endpoints
+│   │   ├── transactions.py  # Transaction endpoints
+│   │   ├── ml_actions.py # ML-powered action endpoints
+│   │   └── health.py     # Health check endpoints
+│   ├── core/             # Core configuration and security
+│   │   ├── config.py     # Application settings
+│   │   └── security.py   # Authentication and JWT
+│   ├── ml/               # Machine Learning modules
+│   │   ├── llm_service.py    # LLM integration service
+│   │   └── action_engine.py  # ML action processor
+│   ├── models/           # Data models
+│   │   └── schemas.py    # Pydantic models
+│   └── services/         # Business logic
+│       ├── coin_service.py        # Coin operations
+│       └── transaction_service.py # Transaction logic
+├── main.py               # Application entry point
+├── Dockerfile           # Docker configuration
+├── docker-compose.yml   # Docker Compose setup
+├── serverless.yml       # Serverless Framework config
+└── requirements.txt     # Python dependencies
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.11+
+- pip
+- (Optional) Docker and Docker Compose
+- (Optional) OpenAI API key for LLM features
+
+### Local Development
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/sjhallo07/tbcoin-engine-ml.git
+cd tbcoin-engine-ml
+```
+
+2. **Set up environment**
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# (Optional) install ML extras
+pip install -r requirements-ml.txt
+```
+
+3. **Configure environment variables**
+```bash
+cp .env.example .env
+# Edit .env with your settings, especially OPENAI_API_KEY if using LLM features
+```
+
+4. **Run the application**
+```bash
+python main.py
+```
+
+The API will be available at `http://localhost:8000`
+- API Documentation: `http://localhost:8000/docs`
+- ReDoc Documentation: `http://localhost:8000/redoc`
+
+### Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### CoinGecko Demo API
+
+- Set `COINGECKO_DEMO_API_KEY` in your environment (or edit the placeholder inside `examples/coingecko_demo.py`) to authenticate requests against the CoinGecko public demo plan at `https://api.coingecko.com/api/v3/`.
+- Export the demo key (Windows PowerShell example): `setx COINGECKO_DEMO_API_KEY "CG-icu2MHGS8bkS3maLooybpAQP"`.
+- Verify the REST endpoint directly via curl:
+  ```powershell
+  curl --request GET `
+    --url https://api.coingecko.com/api/v3/ping `
+    --header 'x-cg-demo-api-key: CG-icu2MHGS8bkS3maLooybpAQP'
+  ```
+- Run `python examples/coingecko_demo.py` to print the top market-cap coins using the required `x-cg-demo-api-key` header and the `/coins/markets` endpoint.
+- Use the script as a template for integrating CoinGecko demo responses while keeping secrets out of source control.
+- For detailed per-asset metadata and market data, run `python examples/coingecko_coin_details.py [coin_id]` (defaults to `bitcoin`) which hits `/coins/{id}` and prints core fields.
+- Explore onchain Solana/Polygon endpoints with `python examples/coingecko_onchain_demo.py <network> <command> [...]` (e.g., `solana multi <addr1> <addr2>` or `polygon-pos new-pools`); this script covers `/onchain/networks/{network}/tokens/multi`, `/tokens/{address}/info`, and `/new_pools` using the demo plan rate limits.
+- Verify CoinGecko Pro service availability with `python examples/coingecko_ping.py`, which calls `/ping` via the official SDK using the `COINGECKO_PRO_API_KEY` environment variable.
+- See `docs/coingecko_ai_building.md` for AI-integration tips covering llms guidance, MCP server setup, and documentation tooling.
+- See `docs/coingecko-onchain-metadata.md` for endpoint descriptions, sample commands, and metadata fields (websites, socials, GT Scores, holders distribution) available via the onchain demo API.
+
+### Serverless Deployment (AWS Lambda)
+
+```bash
+# Install Serverless Framework
+npm install -g serverless
+
+# Install serverless plugins
+npm install
+
+# Deploy to AWS
+serverless deploy --stage prod
+
+# View logs
+serverless logs -f api -t
+```
+
+## 📚 API Documentation
+
+### Health Check
+```bash
+GET /api/v1/health
+```
+
+### Coin Management
+
+**Get Balance**
+```bash
+GET /api/v1/coins/balance/{user_id}
+```
+
+**Stake Coins**
+```bash
+POST /api/v1/coins/stake/{user_id}?amount=100
+```
+
+**Mint Coins** (Admin)
+```bash
+POST /api/v1/coins/mint/{user_id}?amount=1000
+```
+
+### Transactions
+
+**Create Transaction**
+```bash
+POST /api/v1/transactions
+Content-Type: application/json
+
+{
+  "from_user": "user123",
+  "to_user": "user456",
+  "amount": 100.0,
+  "transaction_type": "send"
+}
+```
+
+**Quick Send**
+```bash
+POST /api/v1/transactions/quick-send?from_user=user123&to_user=user456&amount=50
+```
+
+**Get User Transactions**
+```bash
+GET /api/v1/transactions/user/{user_id}
+```
+
+### ML-Powered Actions
+
+**Analyze Transaction**
+```bash
+POST /api/v1/ml/analyze-transaction?from_user=user123&to_user=user456&amount=1000
+```
+
+**Get Recommendations**
+```bash
+POST /api/v1/ml/recommend?user_id=user123&context=I want to optimize my portfolio
+```
+
+**Predict Market Trends**
+```bash
+POST /api/v1/ml/predict-trend
+```
+
+**Optimize Transaction**
+```bash
+POST /api/v1/ml/optimize-transaction?user_id=user123&amount=500&transaction_type=send
+```
+
+**Intelligent Transfer**
+```bash
+POST /api/v1/ml/intelligent-transfer?from_user=user123&to_user=user456&amount=100&auto_execute=true
+```
+
+## 🤖 ML/LLM Integration
+
+### LLM Features
+
+The system integrates with OpenAI's GPT-4 for intelligent decision-making:
+
+1. **Transaction Analysis**: Analyzes transactions for fraud detection and risk assessment
+2. **Portfolio Recommendations**: Provides personalized advice based on user context
+3. **Market Predictions**: Forecasts market trends using historical data
+4. **Transaction Optimization**: Suggests optimal timing and parameters
+
+### Fallback Mode
+
+If no OpenAI API key is configured, the system operates in fallback mode using rule-based algorithms:
+- Basic risk assessment
+- Rule-based recommendations
+- Simple trend analysis
+- Standard optimization
+
+## ⚙️ Configuration
+
+Key environment variables in `.env`:
+
+```env
+# Application
+APP_NAME=TB Coin Engine ML
+APP_ENV=development
+DEBUG=True
+API_HOST=0.0.0.0
+API_PORT=8000
+
+# Security
+SECRET_KEY=your-secret-key-here
+JWT_SECRET_KEY=your-jwt-secret-here
+
+# LLM Configuration
+OPENAI_API_KEY=your-openai-api-key
+LLM_MODEL=gpt-4
+LLM_TEMPERATURE=0.7
+LLM_MAX_TOKENS=1000
+
+# Coin Settings
+INITIAL_COIN_SUPPLY=1000000
+MIN_TRANSACTION_AMOUNT=0.01
+MAX_TRANSACTION_AMOUNT=1000000
+TRANSACTION_FEE_PERCENT=0.5
+```
+
+## 🔒 Security Features
+
+- JWT-based authentication
+- Password hashing with bcrypt
+- Transaction validation and limits
+- Fraud detection using ML
+- Risk assessment for high-value transactions
+
+## 📊 Data Models
+
+### CoinBalance
+- `user_id`: User identifier
+- `balance`: Available coin balance
+- `staked_balance`: Staked coins
+- `last_updated`: Last update timestamp
+
+### Transaction
+- `transaction_id`: Unique transaction ID
+- `from_user`: Sender
+- `to_user`: Receiver
+- `amount`: Transaction amount
+- `transaction_type`: SEND, MINT, BURN, STAKE, UNSTAKE
+- `status`: PENDING, COMPLETED, FAILED, CANCELLED
+- `fee`: Transaction fee
+- `timestamp`: Creation time
+
+### MLActionResponse
+- `action_id`: Action identifier
+- `action_type`: Type of ML action
+- `result`: Action results
+- `confidence`: Confidence score (0-1)
+- `reasoning`: Explanation of decision
+- `recommendations`: List of suggestions
+
+## 🧪 Testing
+
+```bash
+# Run with pytest (when tests are added)
+pytest
+
+# Test API endpoints
+curl http://localhost:8000/api/v1/health
+```
+
+## 📈 Monitoring
+
+The system provides health check endpoints for monitoring:
+
+- `/api/v1/health`: Overall health status
+- `/api/v1/health/live`: Liveness probe
+- `/api/v1/health/ready`: Readiness probe
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+For issues, questions, or contributions, please open an issue on GitHub.
+
+## 🎯 Roadmap
+
+- [ ] PostgreSQL/MongoDB database integration
+- [ ] WebSocket support for real-time updates
+- [ ] Advanced ML models for price prediction
+- [ ] Multi-currency support
+- [ ] Automated testing suite
+- [ ] Performance optimization
+- [ ] Rate limiting and throttling
+- [ ] Advanced analytics dashboard
+
+## 🌐 Deployment Platforms
+
+This backend is compatible with:
+- AWS Lambda (via Serverless Framework)
+- Google Cloud Functions
+- Azure Functions
+- Kubernetes clusters
+- Traditional VPS/dedicated servers
+- Platform-as-a-Service (Heroku, Railway, etc.)
+
+---
+
+Built with ❤️ using FastAPI, Python, and AI

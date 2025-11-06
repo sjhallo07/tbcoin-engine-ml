@@ -1,0 +1,56 @@
+name: Canary Model CI
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'ai/**', 'solana_adapter.py', 'ai_decision_engine.py', 'executor.py', 'requirements-minimal.txt' ]
+  workflow_dispatch:
+  schedule:
+    # Daily retrain/check at 02:00 UTC (example)
+    - cron: '0 2 * * *'
+
+jobs:
+  test-and-deploy-canary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-minimal.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install minimal requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-minimal.txt
+
+      - name: Run tests
+        run: |
+          python -m pip install pytest
+          pytest -q
+
+      - name: Build and validate canary package
+        run: |
+          echo "Packaging canary model for staging (placeholder)"
+          # Implement packaging steps here (e.g., build a wheel or container)
+
+      - name: Deploy Canary to Staging
+        if: success() # only run if previous steps passed
+        run: |
+          echo "Deploying canary to staging (placeholder)"
+          # Add deployment steps: push container, update deployment manifests, call cloud API, etc.
+
+      - name: Post-deploy smoke tests
+        if: success()
+        run: |
+          echo "Run lightweight smoke-tests against staging (placeholder)"

@@ -1,0 +1,14 @@
+data_ingestion:
+  target: "99.9% event capture rate"
+  metric: "Transactions processed per hour"
+  alert: ">5% data loss in 1 hour"
+
+model_performance:
+  target: ">70% prediction accuracy"
+  metric: "Precision, Recall, F1-Score"
+  alert: "Accuracy drops below 60%"
+
+system_performance:
+  target: "<2 second API response time"
+  metric: "P95 latency across endpoints"
+  alert: "Latency >5 seconds"
