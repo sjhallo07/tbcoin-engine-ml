@@ -63,5 +63,5 @@ print(json.dumps(result))
 '@
 & $venvPython -c $code | Write-Host
 
-Write-Host "[done] Activate with: `.$VenvName\Scripts\Activate.ps1`" -ForegroundColor Green
-Write-Host "[done] Then run: `python run_api.py`" -ForegroundColor Green
+Write-Host "[done] Activate with: `".\$VenvName\Scripts\Activate.ps1`"" -ForegroundColor Green
+Write-Host "[done] Then run: `"python run_api.py`"" -ForegroundColor Green

@@ -37,7 +37,7 @@ class GrafanaClient:
         self.api_key = api_key or os.getenv("GRAFANA_API_KEY")
         self.protocol = os.getenv("GRAFANA_PROTOCOL", protocol)
         self.port = int(os.getenv("GRAFANA_PORT", str(port)))
-        self._client: Optional[GrafanaFace] = None
+        self._client: Optional[Any] = None
         self._init_client()
 
     def _init_client(self) -> None:
@@ -97,6 +97,7 @@ def probe_optional_libs() -> Dict[str, bool]:
     Uses importlib to avoid importing modules that might have side effects.
     """
     import importlib
+    from importlib import util
 
     libs = [
         ("numpy", "numpy"),
@@ -116,8 +117,8 @@ def probe_optional_libs() -> Dict[str, bool]:
     availability: Dict[str, bool] = {}
     for mod_name, label in libs:
         try:
-            importlib.util.find_spec(mod_name)
-            availability[label] = importlib.util.find_spec(mod_name) is not None
+            spec = util.find_spec(mod_name)
+            availability[label] = spec is not None
         except Exception:
             availability[label] = False
     return availability

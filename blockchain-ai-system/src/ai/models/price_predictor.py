@@ -30,7 +30,7 @@ class PricePredictor:
             self.model = RandomForestRegressor(n_estimators=100, random_state=42)  # type: ignore
         self.is_trained = False
 
-    def prepare_features(self, historical_data: List[Dict[str, Any]]):
+    def prepare_features(self, historical_data: List[Dict[str, Any]]) -> Any:
         """Prepare features for training.
 
         Returns a pandas DataFrame when ML stack is available; otherwise returns
@@ -81,7 +81,7 @@ class PricePredictor:
 
     def predict(self, current_data: Dict[str, Any]) -> Dict[str, Any]:
         """Make price prediction."""
-        if not self.is_trained or not self.available or self.model is None:
+        if not self.is_trained or not self.available or self.model is None or np is None:
             return {
                 "predicted_price": current_data.get("current_price", 0),
                 "confidence": 0.5,

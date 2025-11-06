@@ -72,13 +72,22 @@ async def predict_coin(coin_id: str) -> Dict[str, Any]:
         # Train and prepare snapshot only if ML stack is available
         if getattr(predictor, "available", False):
             await _ensure_model_trained(market_data)
-            features_frame = predictor.prepare_features(market_data)
+            features_frame: Any = predictor.prepare_features(market_data)
             try:
-                coin_features = features_frame.loc[features_frame["id"] == coin_id]
-                if not coin_features.empty:  # type: ignore[attr-defined]
-                    current_snapshot = coin_features.iloc[-1].to_dict()  # type: ignore[attr-defined]
+                if hasattr(features_frame, "loc") and hasattr(features_frame, "__getitem__"):
+                    # Treat as a pandas DataFrame-like object
+                    coin_features = features_frame.loc[features_frame["id"] == coin_id]
+                    if not coin_features.empty:  # type: ignore[attr-defined]
+                        current_snapshot = coin_features.iloc[-1].to_dict()  # type: ignore[attr-defined]
+                    else:
+                        current_snapshot = coin_data
                 else:
-                    current_snapshot = coin_data
+                    # Fallback: treat as list[dict]
+                    matching = [
+                        row for row in features_frame
+                        if isinstance(row, dict) and row.get("id") == coin_id
+                    ]
+                    current_snapshot = matching[-1] if matching else coin_data
             except Exception:
                 current_snapshot = coin_data
         else:
