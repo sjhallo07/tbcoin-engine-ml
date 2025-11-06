@@ -11,6 +11,7 @@ from src.ai.models.price_predictor import PricePredictor
 from src.data.collectors.coingecko_client import CoinGeckoClient
 from src.data.collectors.deepseek_client import DeepSeekClient
 from src.api.simple_index import router as simple_router
+from src.monitoring.grafana_client import GrafanaClient, probe_optional_libs
 
 app = FastAPI(title="AI Blockchain API", version="1.0.0")
 
@@ -35,8 +36,18 @@ async def root() -> Dict[str, str]:
 
 
 @app.get("/health")
-async def health() -> Dict[str, str]:
-    return {"status": "healthy"}
+async def health(verbose: bool = False) -> Dict[str, Any]:
+    """Basic health, with optional verbose probes.
+
+    - Always returns status: healthy if app is up.
+    - When verbose=true, includes optional libs availability and grafana status.
+    """
+    payload: Dict[str, Any] = {"status": "healthy"}
+    if verbose:
+        payload["optional_libs"] = probe_optional_libs()
+        grafana = GrafanaClient()
+        payload["grafana"] = grafana.availability() | {"health": grafana.health()}
+    return payload
 
 
 @app.get("/api/market/data")
@@ -58,12 +69,18 @@ async def predict_coin(coin_id: str) -> Dict[str, Any]:
         if not coin_data:
             raise HTTPException(status_code=404, detail="Coin not found")
 
-        await _ensure_model_trained(market_data)
-        features_frame = predictor.prepare_features(market_data)
-        coin_features = features_frame.loc[features_frame["id"] == coin_id]
-        current_snapshot: Dict[str, Any]
-        if not coin_features.empty:
-            current_snapshot = coin_features.iloc[-1].to_dict()
+        # Train and prepare snapshot only if ML stack is available
+        if getattr(predictor, "available", False):
+            await _ensure_model_trained(market_data)
+            features_frame = predictor.prepare_features(market_data)
+            try:
+                coin_features = features_frame.loc[features_frame["id"] == coin_id]
+                if not coin_features.empty:  # type: ignore[attr-defined]
+                    current_snapshot = coin_features.iloc[-1].to_dict()  # type: ignore[attr-defined]
+                else:
+                    current_snapshot = coin_data
+            except Exception:
+                current_snapshot = coin_data
         else:
             current_snapshot = coin_data
 
@@ -97,3 +114,21 @@ if __name__ == "__main__":  # pragma: no cover - manual execution helper
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# Metrics and Grafana endpoints
+@app.get("/api/metrics/grafana/availability")
+async def grafana_availability() -> Dict[str, Any]:
+    g = GrafanaClient()
+    return g.availability()
+
+
+@app.get("/api/metrics/grafana/health")
+async def grafana_health() -> Dict[str, Any]:
+    g = GrafanaClient()
+    return g.health()
+
+
+@app.get("/api/metrics/grafana/dashboard/{uid}")
+async def grafana_dashboard(uid: str) -> Dict[str, Any]:
+    g = GrafanaClient()
+    return g.get_dashboard(uid)
