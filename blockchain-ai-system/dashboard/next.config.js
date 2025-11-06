@@ -1,12 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
-  env: {
-    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
-    COINGECKO_API_KEY: process.env.COINGECKO_API_KEY,
-  },
+  // Keep config small to avoid validation errors during build in different Next.js versions.
 };
 
-module.exports = nextConfig;
+// package.json sets "type": "module" so use ESM export
+export default nextConfig;

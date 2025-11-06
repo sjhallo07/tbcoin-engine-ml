@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 
 interface BlockchainContextValue {
