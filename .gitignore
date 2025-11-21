@@ -1,28 +1,28 @@
-# General Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-.venv/
-
-# Environment files
-.env
-.env.template
-
-# Logs
-logs/
-
-# IDEs
-.vscode/
-.idea/
 # Python
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
-*.so
-.Python
+.pytest_cache/
+.mypy_cache/
+.coverage*
+.coverage
+coverage*/
+htmlcov/
+.tox/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Build artifacts
 build/
-develop-eggs/
 dist/
+develop-eggs/
 downloads/
 eggs/
 .eggs/
@@ -39,50 +39,40 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Virtual Environment
-venv/
-env/
-ENV/
-env.bak/
-venv.bak/
+# Node / Frontend
+node_modules/
+.next/
+*.log
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Environment variables
-.env
-.env.local
-
-# Database
+# Databases
 *.db
 *.sqlite
 *.sqlite3
 
-# Logs
-*.log
+# IDE/editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Env/Secrets
+.env
+.env.*
+.env.local
+.env.template
+
+# Project
 logs/
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-
-# Model files
+.ipynb_checkpoints/
 models/
 *.pth
 *.pt
 *.onnx
 
-# Temporary files
+# Temp
 tmp/
 temp/
 *.tmp
-
-# OS
-.DS_Store
 Thumbs.db

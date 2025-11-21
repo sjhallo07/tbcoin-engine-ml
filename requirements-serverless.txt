@@ -1,2 +1,19 @@
-# Serverless deployment dependencies
+############################################################
+# requirements-serverless.txt
+# Minimal dependencies for AWS Lambda (Python 3.11/3.12) FastAPI app via Mangum
+# Keep this lean to stay within Lambda package size limits. For heavy ML, use
+# a separate service, Lambda layers, or container image.
+############################################################
+
+fastapi==0.104.1
 mangum==0.17.0
+pydantic==2.12.4
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+uvicorn==0.24.0
+PyYAML==6.0.1
+
+# Optional monitoring. Safe to include; remove if you want the smallest package.
+prometheus-client==0.19.0
+
+# Avoid heavy or compiled libs here. Do NOT include numpy/pandas/sklearn/xgboost/lightgbm.

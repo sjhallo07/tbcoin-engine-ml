@@ -1,0 +1,21 @@
+ethereum:
+  mainnet:
+    rpc_url: ${ETH_MAINNET_RPC}
+    chain_id: 1
+    explorer_api: https://api.etherscan.io
+    default_account: ${ETH_MAINNET_ACCOUNT}
+  arbitrum:
+    rpc_url: ${ARB_MAINNET_RPC}
+    chain_id: 42161
+    explorer_api: https://api.arbiscan.io
+    default_account: ${ARB_MAINNET_ACCOUNT}
+polygon:
+  mainnet:
+    rpc_url: ${POLYGON_MAINNET_RPC}
+    chain_id: 137
+    explorer_api: https://api.polygonscan.com
+    default_account: ${POLYGON_MAINNET_ACCOUNT}
+solana:
+  mainnet:
+    rpc_url: ${SOLANA_MAINNET_RPC}
+    market_api: https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true

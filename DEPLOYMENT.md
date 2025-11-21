@@ -65,6 +65,28 @@ serverless deploy --stage prod
 # - DATABASE_URL
 ```
 
+#### Recommended runtime and environment
+
+- Prefer AWS Lambda Python 3.11 (or newer supported by Lambda).
+- Keep the Lambda package lean. Use `requirements-serverless.txt` for Mangum + FastAPI minimal runtime.
+- Heavy ML dependencies (numpy, pandas, scikit-learn, xgboost, lightgbm) should not be bundled into a ZIP-based Lambda due to size. Run them in a separate service or container image, or use Lambda Layers if strictly needed.
+
+#### Local serverless setup on Windows PowerShell
+
+```powershell
+./scripts/setup_serverless_env.ps1
+```
+
+This provisions `.venv_serverless` and installs `requirements-serverless.txt`.
+
+#### Container image alternative
+
+If you need heavy ML, build a Lambda container image based on `public.ecr.aws/lambda/python:3.11` and install the full requirements. Set the handler to `serverless_handler.lambda_handler`.
+
+#### Handler entrypoint
+
+`serverless_handler.py` exposes `lambda_handler` using `Mangum(app, lifespan="off")` wrapping the FastAPI `app` from `main.py`.
+
 ## 📡 API Endpoints Overview
 
 ### Health & Status

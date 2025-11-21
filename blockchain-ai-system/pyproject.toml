@@ -1,0 +1,72 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "blockchain-ai-system"
+version = "0.1.0"
+description = "FastAPI service + data collectors + simple ML predictor + dashboard integration"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Marcos Mora", email = "abreu760@hotmail.com" }
+]
+maintainers = [
+  { name = "sjhallo07" }
+]
+keywords = [
+  "blockchain",
+  "fastapi",
+  "coingecko",
+  "machine-learning",
+  "predictive-analytics",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Framework :: FastAPI",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+  "fastapi==0.104.1",
+  "uvicorn==0.24.0",
+  "aiohttp==3.9.1",
+  "pandas==2.1.3",
+  "numpy>=1.26",
+  "scikit-learn==1.3.2",
+  "web3==6.11.0",
+  "python-dotenv==1.0.0",
+  "pyyaml==6.0.1",
+]
+
+[project.optional-dependencies]
+# Optional PDF generation support
+pdf = [
+  "reportlab>=3.6",
+]
+# Optional PostgreSQL database client
+postgres = [
+  "psycopg[binary]>=3.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/abreu760/tbcoin-engine-ml"
+Repository = "https://github.com/abreu760/tbcoin-engine-ml.git"
+Issues = "https://github.com/abreu760/tbcoin-engine-ml/issues"
+Changelog = "https://github.com/abreu760/tbcoin-engine-ml/releases"
+Download = "https://github.com/abreu760/tbcoin-engine-ml/releases"
+
+[project.scripts]
+# Launch the FastAPI server
+blockchain-ai-api = "run_api:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

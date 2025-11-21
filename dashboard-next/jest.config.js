@@ -7,7 +7,8 @@ const config = {
         '\\.(css|less|sass|scss)$': '<rootDir>/test/__mocks__/styleMock.js',
     },
     setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-    testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+    // Ignore the Node-based smoke test script; it's executed via `npm run test:endpoints`.
+    testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/', '<rootDir>/test/endpoints.test.js'],
     transform: {
             '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.jest.json' }],
             '^.+\\.(js|jsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.jest.json' }],

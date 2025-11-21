@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { getMint } from '@solana/spl-token'
 
 import { createSolanaConnection, toPublicKey } from '../../../../services/solana-utils'
 import { getRealMarketData } from '../../../../services/real-market-data'
@@ -23,17 +22,9 @@ export async function POST(request: Request) {
 
     const connection = createSolanaConnection('confirmed')
 
-    let tokenData: Awaited<ReturnType<typeof getMint>> | null = null
-
-    if (mintAddress) {
-      try {
-        const mintKey = toPublicKey(mintAddress)
-        tokenData = await getMint(connection, mintKey)
-        console.log(`[real-analysis] token fetched`, mintAddress)
-      } catch (error) {
-        console.warn(`[real-analysis] token fetch failed for ${mintAddress}`, error)
-      }
-    }
+    // Optional: fetch token details when the SPL-Token helper is available.
+    // In this minimal build, we skip fetching token mint data to avoid version/API mismatches.
+    const tokenData: any | null = null
 
     const marketData = await getRealMarketData(symbol, mintAddress)
     const analysis = await performRealAnalysis(marketData, tokenData)
