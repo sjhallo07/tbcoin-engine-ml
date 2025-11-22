@@ -278,14 +278,15 @@ async function testPerformance() {
     
     testEndpoint('Concurrent Requests Handled', async () => {
       const start = Date.now()
-      const requests = Array(5).fill(null).map(() => 
+      const numRequests = 10  // Increased from 5 for better load testing
+      const requests = Array(numRequests).fill(null).map(() => 
         fetchJson('/api/solana/price')
       )
       
       const results = await Promise.all(requests)
       const duration = Date.now() - start
       
-      console.log(`   5 concurrent requests: ${duration}ms`)
+      console.log(`   ${numRequests} concurrent requests: ${duration}ms`)
       ok(results.every(r => r.status === 200), 'All requests should succeed')
     })
   ]

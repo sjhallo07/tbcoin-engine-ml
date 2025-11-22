@@ -96,7 +96,7 @@ function validateRequest(request) {
   
   // For POST/PUT requests, validate content type
   if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
-    if (!contentType || !contentType.includes('application/json')) {
+    if (!contentType || !contentType.toLowerCase().includes('application/json')) {
       return {
         valid: false,
         error: 'Content-Type must be application/json'

@@ -125,7 +125,7 @@ class TestAutonomousTradingAgent:
         assert hasattr(agent, 'wallet_manager')
         assert hasattr(agent, 'strategy_evolver')
         assert hasattr(agent, 'is_running')
-        assert agent.is_running == False
+        assert not agent.is_running
     
     @pytest.mark.asyncio
     async def test_agent_market_data_gathering(self, agent):
