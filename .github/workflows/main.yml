@@ -9,10 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     
     - name: IBM Cloud Login
-      uses: ibmcloud/ibm-cloud-cli-action@v2
+      uses: ibmcloud/ibm-cloud-cli-action@v3
       with:
         ibmcloud_api_key: ${{ secrets.IBM_CLOUD_API_KEY }}
         

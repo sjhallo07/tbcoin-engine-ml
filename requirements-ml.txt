@@ -10,8 +10,8 @@
 -r requirements.txt
 
 # Deep learning toolkits
-torch==2.9.0
-torchvision==0.24.0
+torch==2.5.1
+torchvision==0.20.1
 tensorflow==2.15.0
 
 # General machine-learning ecosystem

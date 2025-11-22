@@ -1,13 +1,10 @@
-fastapi>=0.100.0
-uvicorn[standard]
-Flask>=2.0
-solana
-python-dotenv
-requests
-# Test/runtime helpers
-pytest
+# Minimal dependencies for core functionality
 fastapi==0.104.1
-uvicorn==0.24.0
+uvicorn[standard]==0.24.0
+Flask>=3.0.0
 solana==0.30.0
 python-dotenv==1.0.0
 requests==2.31.0
+
+# Test/runtime helpers
+pytest>=7.4.0
