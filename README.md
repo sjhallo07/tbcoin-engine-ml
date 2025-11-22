@@ -67,7 +67,37 @@ The `docker-compose.yml` includes services for API, autonomous-agent, TimescaleD
 
 ## Contributing
 
-- Fork, create topic branches, run tests, and open a pull request. Include tests for new behavior and document configuration or secret requirements.
+### Development Setup
+
+1. Fork the repository and clone your fork
+2. Create a virtual environment and install dependencies:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # or .venv\Scripts\Activate.ps1 on Windows
+   pip install -r requirements-minimal.txt
+   ```
+
+3. Install development tools (optional but recommended):
+   ```bash
+   pip install pre-commit
+   pre-commit install
+   ```
+
+### Code Quality
+
+This project uses automated code quality tools:
+- **Pre-commit hooks**: Run `pre-commit run --all-files` before committing
+- **Dependency scanning**: Automated via GitHub Actions
+- **Security audits**: Weekly automated scans with pip-audit
+
+### Submitting Changes
+
+- Fork, create topic branches, run tests, and open a pull request
+- Include tests for new behavior
+- Document configuration or secret requirements
+- Ensure pre-commit hooks pass
+- See `CHANGELOG.md` for tracking changes
+- Review `DEPRECATION_FIXES.md` for dependency guidelines
 
 ## License
 
@@ -419,9 +449,18 @@ The system provides health check endpoints for monitoring:
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+3. Install pre-commit hooks: `pip install pre-commit && pre-commit install`
+4. Make your changes and ensure code quality checks pass
+5. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+6. Push to the branch (`git push origin feature/AmazingFeature`)
+7. Open a Pull Request
+
+### Quality Standards
+- ✅ All pre-commit hooks must pass
+- ✅ Code must follow black formatting (line length: 100)
+- ✅ No security vulnerabilities (checked by bandit)
+- ✅ Updated dependencies must pass security audit
+- 📚 See `WORKFLOW_IMPROVEMENTS.md` for detailed guidelines
 
 ## 📝 License
 
