@@ -1,0 +1,135 @@
+{
+  "report_id": "training_report_20251122_183457",
+  "generated_at": "2025-11-22T18:34:57.975057",
+  "total_models_trained": 4,
+  "models": {
+    "price_prediction_20251122_183457": {
+      "model_id": "price_prediction_20251122_183457",
+      "model_name": "price_prediction",
+      "training_metrics": {
+        "model_type": "price_prediction",
+        "accuracy": 0.8525,
+        "mae": 2.6849999999999996,
+        "rmse": 3.493333333333333,
+        "training_samples": 1000,
+        "training_time_seconds": 2.5,
+        "timestamp": "2025-11-22T18:34:57.972909"
+      },
+      "evaluation_results": {
+        "validation_accuracy": 0.8025,
+        "validation_loss": 0.312,
+        "overfitting_score": 0.050000000000000044,
+        "generalization_score": 0.9139999999999999,
+        "timestamp": "2025-11-22T18:34:57.972988"
+      },
+      "version": "1.0",
+      "created_at": "2025-11-22T18:34:57.973046"
+    },
+    "technical_analysis_20251122_183457": {
+      "model_id": "technical_analysis_20251122_183457",
+      "model_name": "technical_analysis",
+      "training_metrics": {
+        "model_type": "technical_analysis",
+        "accuracy": 0.7999999999999999,
+        "precision": 0.7714285714285715,
+        "recall": 0.813125,
+        "f1_score": 0.9299999999999999,
+        "training_samples": 1000,
+        "training_time_seconds": 3.2,
+        "timestamp": "2025-11-22T18:34:57.973442"
+      },
+      "evaluation_results": {
+        "validation_accuracy": 0.7499999999999999,
+        "validation_loss": 0.43,
+        "overfitting_score": 0.050000000000000044,
+        "generalization_score": 1.032,
+        "timestamp": "2025-11-22T18:34:57.973512"
+      },
+      "version": "1.0",
+      "created_at": "2025-11-22T18:34:57.973561"
+    },
+    "sentiment_analysis_20251122_183457": {
+      "model_id": "sentiment_analysis_20251122_183457",
+      "model_name": "sentiment_analysis",
+      "training_metrics": {
+        "model_type": "sentiment_analysis",
+        "accuracy": 0.89,
+        "precision": 0.9915789473684211,
+        "recall": 0.8361538461538462,
+        "auc_roc": 1.028,
+        "training_samples": 1000,
+        "training_time_seconds": 2.8,
+        "timestamp": "2025-11-22T18:34:57.973878"
+      },
+      "evaluation_results": {
+        "validation_accuracy": 0.84,
+        "validation_loss": 0.49,
+        "overfitting_score": 0.050000000000000044,
+        "generalization_score": 0.868,
+        "timestamp": "2025-11-22T18:34:57.973943"
+      },
+      "version": "1.0",
+      "created_at": "2025-11-22T18:34:57.973992"
+    },
+    "ensemble_20251122_183457": {
+      "model_id": "ensemble_20251122_183457",
+      "model_name": "ensemble",
+      "training_metrics": {
+        "model_type": "ensemble",
+        "accuracy": 0.8784583333333333,
+        "sub_models": {
+          "price_prediction": {
+            "model_type": "price_prediction",
+            "accuracy": 0.89,
+            "mae": 2.635,
+            "rmse": 3.2666666666666666,
+            "training_samples": 1000,
+            "training_time_seconds": 2.5,
+            "timestamp": "2025-11-22T18:34:57.974373"
+          },
+          "technical_analysis": {
+            "model_type": "technical_analysis",
+            "accuracy": 0.8766666666666667,
+            "precision": 0.9228571428571428,
+            "recall": 0.99125,
+            "f1_score": 0.7360606060606061,
+            "training_samples": 1000,
+            "training_time_seconds": 3.2,
+            "timestamp": "2025-11-22T18:34:57.974452"
+          },
+          "sentiment_analysis": {
+            "model_type": "sentiment_analysis",
+            "accuracy": 0.8625,
+            "precision": 1.046842105263158,
+            "recall": 0.89,
+            "auc_roc": 1.002,
+            "training_samples": 1000,
+            "training_time_seconds": 2.8,
+            "timestamp": "2025-11-22T18:34:57.974532"
+          }
+        },
+        "training_samples": 1000,
+        "training_time_seconds": 8.5,
+        "timestamp": "2025-11-22T18:34:57.974568"
+      },
+      "evaluation_results": {
+        "validation_accuracy": 0.8284583333333333,
+        "validation_loss": 0.308,
+        "overfitting_score": 0.050000000000000044,
+        "generalization_score": 0.9199999999999999,
+        "timestamp": "2025-11-22T18:34:57.974649"
+      },
+      "version": "1.0",
+      "created_at": "2025-11-22T18:34:57.974699"
+    }
+  },
+  "summary": {
+    "best_model": {
+      "model_id": "sentiment_analysis_20251122_183457",
+      "model_type": "sentiment_analysis",
+      "accuracy": 0.89
+    },
+    "average_accuracy": 0.8552395833333333,
+    "total_training_time": 17.0
+  }
+}

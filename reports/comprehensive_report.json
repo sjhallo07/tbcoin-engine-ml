@@ -1,0 +1,295 @@
+{
+  "generated_at": "2025-11-22T18:34:49.546367",
+  "python_endpoints": {
+    "core_endpoints": [
+      {
+        "path": "/",
+        "method": "GET",
+        "description": "Root endpoint with API information",
+        "response": {
+          "message": "string",
+          "version": "string",
+          "features": "object"
+        }
+      },
+      {
+        "path": "/health",
+        "method": "GET",
+        "description": "Health check endpoint",
+        "response": {
+          "status": "string",
+          "autonomous_agent_enabled": "boolean",
+          "autonomous_agent_running": "boolean"
+        }
+      },
+      {
+        "path": "/status",
+        "method": "GET",
+        "description": "Extended status endpoint",
+        "response": {
+          "api": "string",
+          "database": "string",
+          "blockchain": "string",
+          "autonomous_agent": "object"
+        }
+      }
+    ],
+    "autonomous_agent_endpoints": [
+      {
+        "path": "/api/v1/autonomous/control",
+        "method": "POST",
+        "description": "Control autonomous trading agent",
+        "request": {
+          "action": "string (start|stop|status|analyze)",
+          "parameters": "object (optional)"
+        },
+        "response": "varies by action"
+      },
+      {
+        "path": "/api/v1/autonomous/analyze-market",
+        "method": "POST",
+        "description": "Analyze market using AI",
+        "request": {
+          "market_data": "object",
+          "strategy": "string (optional)"
+        },
+        "response": {
+          "analysis": "object",
+          "recommendation": "string",
+          "confidence": "number",
+          "risk_assessment": "object"
+        }
+      },
+      {
+        "path": "/api/v1/autonomous/performance",
+        "method": "GET",
+        "description": "Get agent performance metrics",
+        "response": {
+          "performance_metrics": "object",
+          "learning_insights": "array",
+          "strategy_performance": "object"
+        }
+      },
+      {
+        "path": "/api/v1/autonomous/train-model",
+        "method": "POST",
+        "description": "Train AI models in background",
+        "query_params": {
+          "model_type": "string (all|price-prediction|reinforcement-learning)"
+        },
+        "response": {
+          "status": "string",
+          "model_type": "string",
+          "message": "string"
+        }
+      }
+    ],
+    "blockchain_endpoints": [
+      {
+        "path": "/api/v1/blockchain/transactions",
+        "method": "GET",
+        "description": "Get blockchain transaction data",
+        "query_params": {
+          "wallet_address": "string (optional)",
+          "start_time": "integer (optional)",
+          "end_time": "integer (optional)",
+          "limit": "integer (default: 1000)",
+          "offset": "integer (default: 0)"
+        }
+      },
+      {
+        "path": "/api/v1/blockchain/wallet/{wallet_address}/behavior",
+        "method": "GET",
+        "description": "Get wallet behavior analysis"
+      },
+      {
+        "path": "/api/v1/blockchain/predict",
+        "method": "POST",
+        "description": "Make prediction using trained ML models"
+      },
+      {
+        "path": "/api/v1/blockchain/model/metrics",
+        "method": "GET",
+        "description": "Get current model performance metrics"
+      }
+    ]
+  },
+  "nodejs_endpoints": {
+    "tbcoin_endpoints": [
+      {
+        "path": "/api/tbcoin/data",
+        "method": "GET",
+        "description": "Get TB Coin data",
+        "response": {
+          "status": "success",
+          "data": {
+            "price": "number",
+            "holders": "number",
+            "transactions": "number",
+            "marketCap": "number",
+            "timestamp": "string (ISO 8601)"
+          }
+        },
+        "features": [
+          "Real-time price data",
+          "Holder count tracking",
+          "Transaction statistics",
+          "Market cap calculation"
+        ]
+      }
+    ],
+    "solana_endpoints": [
+      {
+        "path": "/api/solana/price",
+        "method": "GET",
+        "description": "Get Solana price data",
+        "response": {
+          "status": "success",
+          "data": {
+            "price": "number",
+            "change24h": "number",
+            "marketCap": "number",
+            "volume24h": "number",
+            "timestamp": "string (ISO 8601)"
+          }
+        },
+        "features": [
+          "Real-time Solana pricing",
+          "24-hour change tracking",
+          "Market cap data",
+          "Trading volume statistics"
+        ]
+      },
+      {
+        "path": "/api/solana/test",
+        "method": "POST",
+        "description": "Test endpoint with ML analysis",
+        "request": {
+          "action": "string",
+          "symbol": "string (optional)"
+        },
+        "response": {
+          "status": "success",
+          "data": {
+            "processed": "boolean",
+            "action": "string",
+            "timestamp": "string",
+            "analysis": {
+              "sentiment": "string",
+              "confidence": "number",
+              "recommendation": "string",
+              "riskLevel": "string"
+            }
+          }
+        },
+        "features": [
+          "AI-powered analysis",
+          "Sentiment detection",
+          "Risk assessment",
+          "Trading recommendations"
+        ]
+      }
+    ]
+  },
+  "ml_modules": {
+    "autonomous_decision_engine": {
+      "name": "Autonomous Decision Engine",
+      "file": "agents/ai_decision_engine.py",
+      "description": "AI-powered decision making engine combining LLM, RL, and pattern recognition",
+      "features": [
+        "Market context analysis",
+        "Multi-model recommendation",
+        "Risk assessment",
+        "Pattern recognition",
+        "Reinforcement learning integration"
+      ],
+      "key_methods": [
+        "analyze_market_context(market_data)",
+        "_load_llm(model_name)",
+        "Technical analysis integration",
+        "Risk scoring"
+      ]
+    },
+    "autonomous_trading_agent": {
+      "name": "Autonomous Trading Agent",
+      "file": "agents/autonomous_agent.py",
+      "description": "High-level orchestrator for autonomous trading operations",
+      "features": [
+        "Autonomous trading loop",
+        "Market data gathering",
+        "Decision execution",
+        "Performance tracking",
+        "Learning feedback integration"
+      ],
+      "components": [
+        "Decision Engine",
+        "Blockchain Executor",
+        "Behavior Simulator",
+        "Learning Loop",
+        "Wallet Manager",
+        "Strategy Evolver"
+      ]
+    },
+    "learning_feedback_loop": {
+      "name": "Learning Feedback Loop",
+      "file": "agents/learning_feedback_loop.py",
+      "description": "Continuous learning and adaptation system",
+      "features": [
+        "Trade performance analysis",
+        "Strategy adjustment",
+        "Performance metrics tracking",
+        "Learning insights generation"
+      ]
+    },
+    "strategy_evolver": {
+      "name": "Strategy Evolver",
+      "file": "agents/strategy_evolver.py",
+      "description": "Evolutionary strategy optimization",
+      "features": [
+        "Strategy evolution",
+        "Parameter optimization",
+        "Fitness evaluation",
+        "Strategy adaptation"
+      ]
+    }
+  },
+  "middleware": {
+    "security_middleware": {
+      "file": "dashboard-next/middleware.js",
+      "features": [
+        "Rate limiting (60 requests per minute)",
+        "Security headers (X-Content-Type-Options, X-Frame-Options, etc.)",
+        "Request validation",
+        "CORS handling",
+        "Request logging"
+      ],
+      "rate_limiting": {
+        "window": "60 seconds",
+        "max_requests": 60,
+        "identifier": "API key or IP address",
+        "headers": [
+          "X-RateLimit-Limit",
+          "X-RateLimit-Remaining",
+          "X-RateLimit-Reset"
+        ]
+      },
+      "security_headers": [
+        "X-Content-Type-Options: nosniff",
+        "X-Frame-Options: DENY",
+        "X-XSS-Protection: 1; mode=block",
+        "Referrer-Policy: strict-origin-when-cross-origin",
+        "Permissions-Policy: geolocation=(), microphone=(), camera=()",
+        "Strict-Transport-Security (production only)"
+      ]
+    },
+    "python_security": {
+      "file": "middleware_security.py",
+      "features": [
+        "Rate limiting with Redis",
+        "Security headers",
+        "CORS configuration",
+        "Client identification"
+      ]
+    }
+  }
+}
