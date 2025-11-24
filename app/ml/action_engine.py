@@ -2,7 +2,7 @@
 from typing import Dict, Optional
 from datetime import datetime
 import uuid
-from app.models.schemas import ActionType, MLActionRequest, MLActionResponse
+from app.models.schemas import MLActionRequest, MLActionResponse
 from app.ml.llm_service import llm_service
 
 
@@ -30,18 +30,18 @@ class MLActionEngine:
         Returns:
             MLActionResponse with results
         """
-        action_id = f"action_{uuid.uuid4().hex[:12]}"
+        action_type = action_request.action_type.lower()
         
         # Route to appropriate handler
-        if action_request.action_type == ActionType.ANALYZE:
+        if action_type == "analyze":
             result = await self._handle_analyze(action_request, user_balance)
-        elif action_request.action_type == ActionType.RECOMMEND:
+        elif action_type == "recommend":
             result = await self._handle_recommend(action_request, user_balance)
-        elif action_request.action_type == ActionType.PREDICT:
+        elif action_type == "predict":
             result = await self._handle_predict(action_request)
-        elif action_request.action_type == ActionType.OPTIMIZE:
+        elif action_type == "optimize":
             result = await self._handle_optimize(action_request)
-        elif action_request.action_type == ActionType.TRANSFER:
+        elif action_type == "transfer":
             result = await self._handle_transfer(action_request, user_balance)
         else:
             result = {
@@ -51,10 +51,9 @@ class MLActionEngine:
         
         # Create response
         return MLActionResponse(
-            action_id=action_id,
             action_type=action_request.action_type,
             result=result.get("result", result),
-            confidence=result.get("confidence"),
+            confidence=result.get("confidence", 0.0),
             reasoning=result.get("reasoning"),
             recommendations=result.get("recommendations", []),
             timestamp=datetime.utcnow()
