@@ -107,7 +107,18 @@ class XGBoostUtilities:
         y_val: Any,
         early_stopping_rounds: int = 10
     ) -> Any:
-        """Train model with early stopping."""
+        """Train model with early stopping.
+        
+        Note: early_stopping_rounds is set via model.set_params() for sklearn API,
+        or passed directly for native XGBoost/LightGBM APIs.
+        """
+        # Set early stopping if supported by the model
+        if hasattr(model, 'set_params'):
+            try:
+                model.set_params(early_stopping_rounds=early_stopping_rounds)
+            except (ValueError, TypeError):
+                pass  # Model doesn't support early_stopping_rounds as a parameter
+        
         model.fit(
             X_train, y_train,
             eval_set=[(X_val, y_val)],

@@ -172,18 +172,33 @@ class AssessmentService:
         return assessment
     
     def _check_answer(self, question: QuizQuestion, user_answer: Any) -> bool:
-        """Check if an answer is correct."""
+        """Check if an answer is correct.
+        
+        Handles various question types and answer formats robustly.
+        """
         correct = question.correct_answer
         
         if question.question_type == "multiple_choice":
-            # For multiple choice, compare index or value
+            # Handle single choice (int index) and multi-select (list of indices)
             if isinstance(correct, int):
+                # Single correct answer (index)
+                if isinstance(user_answer, list):
+                    # User provided list but question has single answer
+                    return len(user_answer) == 1 and user_answer[0] == correct
                 return user_answer == correct
-            if isinstance(correct, list):
-                return set(user_answer) == set(correct) if isinstance(user_answer, list) else False
-            return str(user_answer).lower() == str(correct).lower()
+            elif isinstance(correct, list):
+                # Multiple correct answers
+                if not isinstance(user_answer, list):
+                    user_answer = [user_answer]
+                return set(user_answer) == set(correct)
+            else:
+                # String comparison fallback
+                return str(user_answer).lower() == str(correct).lower()
         
         elif question.question_type == "true_false":
+            # Normalize to boolean
+            if isinstance(user_answer, str):
+                user_answer = user_answer.lower() in ('true', 'yes', '1')
             return bool(user_answer) == bool(correct)
         
         elif question.question_type == "short_answer":

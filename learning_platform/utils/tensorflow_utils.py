@@ -45,22 +45,34 @@ class TensorFlowUtilities:
     
     @staticmethod
     def create_sequential_model(layers_config: List[Dict]) -> Any:
-        """Create a sequential neural network model."""
+        """Create a sequential neural network model.
+        
+        Note: input_shape should only be specified for the first layer.
+        The layer config can include 'input_shape' which will only be applied
+        to the first applicable layer.
+        """
         try:
             import tensorflow as tf
             from tensorflow import keras
             
             model = keras.Sequential()
+            is_first_layer = True
             
             for layer_config in layers_config:
                 layer_type = layer_config.get("type", "Dense")
                 
+                # Only use input_shape for the first layer
+                input_shape = layer_config.get("input_shape") if is_first_layer else None
+                
                 if layer_type == "Dense":
-                    model.add(keras.layers.Dense(
-                        units=layer_config.get("units", 64),
-                        activation=layer_config.get("activation", "relu"),
-                        input_shape=layer_config.get("input_shape")
-                    ))
+                    layer_kwargs = {
+                        "units": layer_config.get("units", 64),
+                        "activation": layer_config.get("activation", "relu"),
+                    }
+                    if input_shape:
+                        layer_kwargs["input_shape"] = input_shape
+                    model.add(keras.layers.Dense(**layer_kwargs))
+                    is_first_layer = False
                 elif layer_type == "Dropout":
                     model.add(keras.layers.Dropout(
                         rate=layer_config.get("rate", 0.2)
@@ -68,12 +80,15 @@ class TensorFlowUtilities:
                 elif layer_type == "BatchNormalization":
                     model.add(keras.layers.BatchNormalization())
                 elif layer_type == "Conv2D":
-                    model.add(keras.layers.Conv2D(
-                        filters=layer_config.get("filters", 32),
-                        kernel_size=layer_config.get("kernel_size", (3, 3)),
-                        activation=layer_config.get("activation", "relu"),
-                        input_shape=layer_config.get("input_shape")
-                    ))
+                    layer_kwargs = {
+                        "filters": layer_config.get("filters", 32),
+                        "kernel_size": layer_config.get("kernel_size", (3, 3)),
+                        "activation": layer_config.get("activation", "relu"),
+                    }
+                    if input_shape:
+                        layer_kwargs["input_shape"] = input_shape
+                    model.add(keras.layers.Conv2D(**layer_kwargs))
+                    is_first_layer = False
                 elif layer_type == "MaxPooling2D":
                     model.add(keras.layers.MaxPooling2D(
                         pool_size=layer_config.get("pool_size", (2, 2))
@@ -81,11 +96,14 @@ class TensorFlowUtilities:
                 elif layer_type == "Flatten":
                     model.add(keras.layers.Flatten())
                 elif layer_type == "LSTM":
-                    model.add(keras.layers.LSTM(
-                        units=layer_config.get("units", 64),
-                        return_sequences=layer_config.get("return_sequences", False),
-                        input_shape=layer_config.get("input_shape")
-                    ))
+                    layer_kwargs = {
+                        "units": layer_config.get("units", 64),
+                        "return_sequences": layer_config.get("return_sequences", False),
+                    }
+                    if input_shape:
+                        layer_kwargs["input_shape"] = input_shape
+                    model.add(keras.layers.LSTM(**layer_kwargs))
+                    is_first_layer = False
             
             return model
         except ImportError:

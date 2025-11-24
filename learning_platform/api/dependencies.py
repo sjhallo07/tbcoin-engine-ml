@@ -1,4 +1,5 @@
 """Database and authentication dependencies."""
+import os
 from typing import Generator, Optional
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
@@ -12,8 +13,8 @@ from learning_platform.models.user import User
 # Security scheme
 security = HTTPBearer(auto_error=False)
 
-# JWT settings (should be in config in production)
-JWT_SECRET = "learning-platform-secret-key"  # Should be from environment
+# JWT settings - load from environment in production
+JWT_SECRET = os.environ.get("LEARNING_PLATFORM_JWT_SECRET", "dev-secret-change-in-production")
 JWT_ALGORITHM = "HS256"
 
 

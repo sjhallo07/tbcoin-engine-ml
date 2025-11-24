@@ -1,6 +1,7 @@
 """User service for authentication and user management."""
 import hashlib
 import secrets
+import hmac
 from datetime import datetime
 from typing import Optional, List
 from sqlalchemy.orm import Session
@@ -17,19 +18,26 @@ class UserService:
     
     @staticmethod
     def hash_password(password: str) -> str:
-        """Hash a password using SHA-256 with salt."""
-        salt = secrets.token_hex(16)
-        hashed = hashlib.sha256((password + salt).encode()).hexdigest()
-        return f"{salt}${hashed}"
+        """Hash a password using PBKDF2 with SHA-256.
+        
+        Uses PBKDF2-HMAC-SHA256 with a secure salt and sufficient iterations
+        for password hashing security.
+        """
+        salt = secrets.token_bytes(16)
+        # Use PBKDF2 with 600,000 iterations as recommended by OWASP
+        hashed = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 600000)
+        return f"{salt.hex()}${hashed.hex()}"
     
     @staticmethod
     def verify_password(password: str, hashed_password: str) -> bool:
-        """Verify a password against its hash."""
+        """Verify a password against its hash using constant-time comparison."""
         try:
-            salt, stored_hash = hashed_password.split("$")
-            computed_hash = hashlib.sha256((password + salt).encode()).hexdigest()
-            return computed_hash == stored_hash
-        except ValueError:
+            salt_hex, stored_hash = hashed_password.split("$")
+            salt = bytes.fromhex(salt_hex)
+            computed_hash = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 600000)
+            # Use constant-time comparison to prevent timing attacks
+            return hmac.compare_digest(computed_hash.hex(), stored_hash)
+        except (ValueError, AttributeError):
             return False
     
     def create_user(self, user_data: UserCreate) -> User:

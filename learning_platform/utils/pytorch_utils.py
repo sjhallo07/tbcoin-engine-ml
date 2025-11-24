@@ -78,14 +78,32 @@ class PyTorchUtilities:
             raise ImportError("PyTorch is required")
     
     @staticmethod
-    def create_data_loader(X: Any, y: Any, batch_size: int = 32, shuffle: bool = True) -> Any:
-        """Create a PyTorch DataLoader."""
+    def create_data_loader(
+        X: Any, 
+        y: Any, 
+        batch_size: int = 32, 
+        shuffle: bool = True,
+        task: str = "classification"
+    ) -> Any:
+        """Create a PyTorch DataLoader.
+        
+        Args:
+            X: Feature data
+            y: Target data
+            batch_size: Batch size for DataLoader
+            shuffle: Whether to shuffle data
+            task: 'classification' uses LongTensor for y, 'regression' uses FloatTensor
+        """
         try:
             import torch
             from torch.utils.data import DataLoader, TensorDataset
             
             X_tensor = torch.FloatTensor(X)
-            y_tensor = torch.LongTensor(y)
+            # Use appropriate tensor type based on task
+            if task == "regression":
+                y_tensor = torch.FloatTensor(y)
+            else:
+                y_tensor = torch.LongTensor(y)
             
             dataset = TensorDataset(X_tensor, y_tensor)
             return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
