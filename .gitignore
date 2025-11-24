@@ -73,7 +73,7 @@ htmlcov/
 .tox/
 
 # Model files
-models/
+/models/
 *.pth
 *.pt
 *.onnx
