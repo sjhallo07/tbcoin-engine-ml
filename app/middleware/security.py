@@ -331,7 +331,7 @@ class RequestValidationMiddleware(BaseHTTPMiddleware):
                 if length > self.max_content_length:
                     raise HTTPException(
                         status_code=413,
-                        detail=f"Request too large. Maximum: {self.max_content_length} bytes"
+                        detail="Request payload too large"
                     )
             except ValueError:
                 raise HTTPException(

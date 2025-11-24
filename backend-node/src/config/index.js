@@ -66,6 +66,10 @@ function validateConfig() {
     if (config.security.jwtSecret === 'change-this-jwt-secret') {
       errors.push('JWT_SECRET_KEY must be set in production');
     }
+    // Validate JWT secret meets minimum security requirements
+    if (config.security.jwtSecret.length < 32) {
+      errors.push('JWT_SECRET_KEY must be at least 32 characters for security');
+    }
   }
 
   if (errors.length > 0) {

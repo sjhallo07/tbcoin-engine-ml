@@ -319,30 +319,39 @@ class MongoDBClient:
         result = await collection.delete_one(sanitized_query)
         return result.deleted_count > 0
     
+    def _sanitize_value(self, value: Any, allowed_keys: set = None) -> Any:
+        """Recursively sanitize a value (dict, list, or primitive)
+        
+        Args:
+            value: Value to sanitize
+            allowed_keys: Set of allowed keys starting with $ (for queries)
+            
+        Returns:
+            Sanitized value
+        """
+        if isinstance(value, dict):
+            sanitized = {}
+            for k, v in value.items():
+                if k.startswith("$"):
+                    if allowed_keys and k not in allowed_keys:
+                        logger.warning(f"Blocked operator: {k}")
+                        continue
+                    elif not allowed_keys and k not in ("$set", "$inc", "$push", "$pull"):
+                        logger.warning(f"Suspicious key removed: {k}")
+                        continue
+                sanitized[k] = self._sanitize_value(v, allowed_keys)
+            return sanitized
+        elif isinstance(value, list):
+            return [self._sanitize_value(v, allowed_keys) for v in value]
+        else:
+            return value
+    
     def _sanitize_document(self, document: Dict[str, Any]) -> Dict[str, Any]:
         """Sanitize document to prevent NoSQL injection
         
         Removes keys starting with $ to prevent operator injection.
         """
-        sanitized = {}
-        for key, value in document.items():
-            # Skip keys that look like MongoDB operators (unless they are)
-            if key.startswith("$") and key not in ("$set", "$inc", "$push", "$pull"):
-                logger.warning(f"Suspicious key removed from document: {key}")
-                continue
-            
-            # Recursively sanitize nested documents
-            if isinstance(value, dict):
-                sanitized[key] = self._sanitize_document(value)
-            elif isinstance(value, list):
-                sanitized[key] = [
-                    self._sanitize_document(v) if isinstance(v, dict) else v
-                    for v in value
-                ]
-            else:
-                sanitized[key] = value
-        
-        return sanitized
+        return self._sanitize_value(document, allowed_keys=None)
     
     def _sanitize_query(self, query: Dict[str, Any]) -> Dict[str, Any]:
         """Sanitize query to prevent NoSQL injection
@@ -363,11 +372,10 @@ class MongoDBClient:
                     continue
             
             if isinstance(value, dict):
-                sanitized[key] = self._sanitize_query(value)
+                sanitized[key] = self._sanitize_value(value, allowed_operators)
             elif isinstance(value, list):
                 sanitized[key] = [
-                    self._sanitize_query(v) if isinstance(v, dict) else v
-                    for v in value
+                    self._sanitize_value(v, allowed_operators) for v in value
                 ]
             elif isinstance(value, str):
                 # Escape regex special characters if using $regex

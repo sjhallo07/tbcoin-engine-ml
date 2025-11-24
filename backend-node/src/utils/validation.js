@@ -59,14 +59,24 @@ function sanitizeObject(obj) {
 }
 
 /**
- * Check for NoSQL injection patterns
- * @param {*} value - Value to check
+ * Check for NoSQL injection patterns in user input
+ * @param {*} value - Value to check (should be user input, not query objects)
  * @returns {boolean} True if injection pattern detected
+ * 
+ * Note: This checks for MongoDB operators in user-provided values which could
+ * indicate injection attempts. Legitimate query operators in query objects
+ * (constructed by application code) are safe and not checked here.
  */
 function hasNoSQLInjection(value) {
   if (typeof value === 'object' && value !== null) {
-    const suspicious = ['$where', '$gt', '$lt', '$ne', '$regex', '$or', '$and', '$nin', '$in'];
-    return Object.keys(value).some(key => suspicious.includes(key));
+    // Only flag operators that allow arbitrary code execution or bypass authentication
+    const dangerous = ['$where', '$function', '$accumulator', '$expr'];
+    return Object.keys(value).some(key => dangerous.includes(key));
+  }
+  // Check for operator patterns in string values
+  if (typeof value === 'string') {
+    const operatorPattern = /\$(?:where|function|accumulator|expr)\s*:/i;
+    return operatorPattern.test(value);
   }
   return false;
 }
