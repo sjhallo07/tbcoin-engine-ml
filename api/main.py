@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import os
@@ -73,6 +73,28 @@ app.include_router(autonomous_router)
 # NEW - Include solana endpoints when available
 if solana_router is not None:
     app.include_router(solana_router)
+
+# NEW - ML training trigger endpoint
+ml_router = APIRouter(prefix="/api/v1/ml", tags=["ml"])
+
+@ml_router.post("/train-token-history")
+async def train_token_history():
+    """Trigger minimal token history training pipeline and return metrics.
+
+    Uses synthetic data placeholders so it runs immediately. Replace
+    components with real implementations over time.
+    """
+    try:
+        from ml_models.token_history import TokenHistoryTrainingPipeline
+        pipeline = TokenHistoryTrainingPipeline({})
+        model, metrics = pipeline.run_full_training()
+        pipeline.save_results(model, metrics)
+        return {"status": "ok", "metrics": metrics}
+    except Exception as exc:
+        logger.error("ML training failed: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+app.include_router(ml_router)
 
 @app.get("/")
 async def root():
