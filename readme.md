@@ -1,233 +1,457 @@
-applyTo: '*TB COIN ENGINE ML*'
-Provide project context and coding guidelines that AI should follow when generating code, answering questions, or reviewing changes.   
-# IBM Free Tier Non-Cost Deployment Instructions     
+# TB Coin Engine — Autonomous AI Trading Agent
 
-This deployment leverages IBM Cloud's scalable, orchestrated environment to support both supervised and unsupervised machine learning workflows. The system collects, cleans, and processes data in managed databases, enabling iterative ML cycles for analysis and order execution. Logs are continuously reviewed, with iteration and control possible via log commands and API endpoints.
+## Overview
 
-The architecture separates concerns:
-- **Node.js/Express backend**: Handles smart contract and blockchain interactions, exposes endpoints for orchestration and control.
-- **Python backend**: Dedicated to ML and LLM tasks, ensuring robust AI/ML processing.
+TB Coin Engine is a Python platform that integrates blockchain access, an autonomous AI trading agent, and ML-driven predictive components. It provides a FastAPI-based API, agent orchestrators, ML/diagnostics scaffolding, and optional Docker Compose manifests for local integration testing (TimescaleDB, Redis, MLflow, MinIO, Prometheus, Grafana).
 
-Dependencies are organized for compatibility between Python and Node.js, enabling seamless integration between blockchain operations and advanced ML/AI features.
+This repository is intended for development, experiments, and demonstration of safe-by-default autonomous trading patterns: analysis-only mode, guarded imports for optional ML/LLM libs, and KMS-backed signing recommendations for production.
 
-<!-- Add useful information to your short description that explains what the product is, why a user wants to install and use it, and any additional details the user needs to get started. The following information is an example. Make sure you update this section accordingly. -->
+## Key Features
 
+- FastAPI API with health and status endpoints (`/health`, `/status`).
+- Autonomous agent scaffolding under `/api/v1/autonomous` (control, analyze, train).
+- Diagnostics using FastAPI `TestClient` for in-process checks.
+- Optional ML and tracking stack via `docker-compose.yml`.
+- Safe feature flags: `AI_AGENT_ENABLED`, `AI_TRADING_ENABLED`.
 
-# TB COIN ENGINE ML — IBM Cloud Free Tier Deployment
+## Quick start (development)
 
-TB COIN ENGINE ML is an AI-powered backend platform for cryptocurrency operations, combining blockchain integration, autonomous trading agents, and advanced machine learning (ML) for intelligent coin management, transaction processing, and automated decision-making. It features:
+1. Create virtual environment and activate it:
 
-- **FastAPI-based API** for coin management, staking, minting, burning, and secure transaction processing
-- **Autonomous AI/ML agent** for continuous market analysis, recommendations, and controlled trading
-- **ML/LLM integration** (e.g., OpenAI GPT-4) for smart recommendations, fraud detection, and trend prediction
-- **Modular architecture** supporting local, Docker, serverless, and cloud-native (Kubernetes/IBM Code Engine) deployments
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1   # Windows PowerShell
+# or: source .venv/bin/activate (macOS / Linux)
+```
 
-Deploying on IBM Cloud Free Tier allows you to run the full backend (API, ML worker, blockchain listener) at zero cost for development and experimentation, leveraging IBM Code Engine, Container Registry, and managed databases within free tier limits.
+2. Install minimal dependencies:
 
-This guide provides step-by-step instructions for a cost-free, production-ready deployment on IBM Cloud, including prerequisites, resource requirements, installation, and management.
+```powershell
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r requirements-minimal.txt
+```
 
-In IBM Cloud, you can configure your installation from the Create tab, and then install it with a single click instead of executing the Helm installation directly. Your Helm Chart is installed by using IBM Cloud Schematics, and after the installation is complete, you can view the chart instance, update the version, or uninstall from your Schematics workspace.
+3. Run the API (foreground):
 
-## Before you begin
+```powershell
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+```
 
-### SDLC Agile Lifecycle Management Requirements (IBM)
+4. Quick checks:
 
-To ensure robust, maintainable, and collaborative deployments, follow IBM's SDLC Agile Lifecycle Management best practices:
+```powershell
+Invoke-RestMethod 'http://127.0.0.1:8000/health' | ConvertTo-Json -Depth 5
+Invoke-RestMethod 'http://127.0.0.1:8000/status' | ConvertTo-Json -Depth 5
+```
 
-- Use IBM Cloud Continuous Delivery toolchains for CI/CD automation (pipelines, Git integration, issue tracking)
-- Manage work with IBM Engineering Workflow Management (EWM) or GitHub Projects for agile boards, sprints, and backlog
-- Apply version control (Git) for all code, configuration, and infrastructure-as-code assets
-- Enforce code reviews, automated testing, and security scans in the pipeline
-- Document user stories, acceptance criteria, and deployment runbooks
-- Track deployments, rollbacks, and changes using pipeline logs and audit trails
-- Foster collaboration with regular standups, sprint reviews, and retrospectives
+## Diagnostics
 
-These practices help ensure traceability, quality, and rapid iteration throughout the software delivery lifecycle on IBM Cloud.
+- `diagnostics/test_health.py` uses FastAPI `TestClient` to validate `/health` and `/status` without starting a server.
+- `diagnostics/test_status.py` is an additional smoke test used previously.
 
+## Local observability
 
+- A module-level `tbcoin` logger is configured for local development to emit startup and health messages. For production, configure structured logging and a handler that forwards logs to your log aggregation system.
+- Use the included Prometheus/Grafana stack in `docker-compose.yml` for metrics and dashboards when running the full stack.
 
-Before deploying TB COIN ENGINE ML on IBM Cloud Free Tier, ensure you have:
+## Configuration & Secrets
 
-* An [IBM Cloud account](https://cloud.ibm.com/registration) (free tier is sufficient)
-* IBM Cloud CLI installed: [Install instructions](https://cloud.ibm.com/docs/cli?topic=cli-install-ibmcloud-cli)
-* IBM Cloud Code Engine CLI plugin: `ibmcloud plugin install code-engine`
-* Docker installed locally (for building and pushing images)
-* Permissions: You must have **administrator** and **manager** roles for Code Engine and Container Registry services in your IBM Cloud account
-* (Optional) jq and bash for running deployment scripts
+- Use feature flags to control agent behavior:
+  - `AI_AGENT_ENABLED` — instantiate agent on startup
+  - `AI_TRADING_ENABLED` — allow execution of real trades (keep false during testing)
+- DO NOT commit real secrets. Use a secrets manager for production (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager). See `.env.template` for placeholders.
 
-No Kubernetes or Helm setup is required—IBM Code Engine abstracts away cluster management for you.
+## Docker Compose (optional)
 
-## Security and compliance controlsÂ 
+The `docker-compose.yml` includes services for API, autonomous-agent, TimescaleDB, Redis, MLflow, MinIO, Prometheus and Grafana. Start only after local validation and secret provisioning.
 
-## Security, Compliance, and Support
+## Contributing
 
-### Security Features
-- JWT-based authentication for API endpoints
-- Password hashing and secure secret management
-- Transaction validation, fraud detection, and risk assessment using ML
-- Environment variables and secrets managed via IBM Cloud Code Engine
+- Fork, create topic branches, run tests, and open a pull request. Include tests for new behavior and document configuration or secret requirements.
 
-### Compliance Controls
-| Profile | ID |
-|---------|----|
-| NIST | SC-7(3) |
-| GDPR | Data minimization, user consent |
-| SOC 2 | Security, availability (cloud infra) |
+## License
 
-### Support
-- For issues, open a GitHub issue in the repository
-- For IBM Cloud platform support, use [IBM Cloud Support](https://cloud.ibm.com/unifiedsupport/supportcenter)
-- For documentation and updates, see the main project README and docs
+See `LICENSE` in the repository root for license terms.
 
-#### IBM Profile Contact Information
-- **Name:** Marcos Mora
-- **User ID:** abreu760@hotmail.com
-- **Email:** abreu760@hotmail.com
-- **Language:** English
+## Contact
 
-## Required resources
+- Use GitHub Issues for bugs and feature requests.
+# TB Coin Engine ML
 
+🚀 **AI-Powered Backend Engine for TB Coin Serverless Operations**
 
+A sophisticated backend system that leverages Machine Learning and Large Language Models (LLMs) to provide intelligent coin management, transaction processing, and automated decision-making for the TB Coin cryptocurrency platform.
 
+## 🌟 Features
 
+### Core Functionality
+- **Coin Management**: Complete balance tracking, staking, minting, and burning operations
+- **Transaction Processing**: Secure and efficient transaction handling with fee management
+- **ML-Powered Actions**: Intelligent decision-making using LLM integration
 
-To run TB COIN ENGINE ML on IBM Cloud Free Tier, you need:
+### ML/AI Capabilities
+- 🤖 **LLM Integration**: OpenAI GPT-4 integration for intelligent recommendations
+- 📊 **Transaction Analysis**: AI-powered fraud detection and risk assessment
+- 💡 **Smart Recommendations**: Personalized portfolio optimization suggestions
+- 📈 **Market Predictions**: Trend analysis and forecasting
+- ⚡ **Transaction Optimization**: Intelligent parameter optimization for transactions
 
-* **Containerization & Orchestration:**
-  - Docker containers for all services
-  - Kubernetes (managed by IBM Code Engine, no manual cluster setup required)
-* **IBM Code Engine:**
-  - For running API, ML worker, blockchain listener, and scalable workloads
-* **Data Analysis & AI:**
-  - Integration with IBM Watson AI services for advanced data analysis and machine learning (optional, enhances AI/ML capabilities)
-* **IBM Cloud Container Registry** (for storing Docker images):
-  - Up to 0.5 GB storage (free tier)
-* **IBM Cloud Databases for PostgreSQL** (optional, for persistent storage):
-  - Smallest instance (see cost script for free/low-cost options)
-* **IBM Cloud Databases for Redis** (optional, for caching):
-  - Smallest instance (see cost script for free/low-cost options)
-* **Basic logging and monitoring** (included in free tier)
+### Deployment Options
+- **Local Development**: Run directly with Python/FastAPI
+- **Docker**: Containerized deployment with Docker Compose
+- **Serverless**: AWS Lambda-ready with Serverless Framework support
+- **Cloud-Native**: Kubernetes and cloud provider compatible
 
-* **IBM Code Engine** (for API, ML worker, and blockchain listener):
-  - API: 0.25 vCPU, 0.5 GB RAM (min 1, max 3 instances)
-  - ML Worker: 0.5 vCPU, 1 GB RAM (min 1, max 2 instances)
-  - Blockchain Listener Job: 0.25 vCPU, 0.5 GB RAM
-* **IBM Cloud Container Registry** (for storing Docker images):
-  - Up to 0.5 GB storage (free tier)
-* **IBM Cloud Databases for PostgreSQL** (optional, for persistent storage):
-  - Smallest instance (see cost script for free/low-cost options)
-* **IBM Cloud Databases for Redis** (optional, for caching):
-  - Smallest instance (see cost script for free/low-cost options)
-* **Basic logging and monitoring** (included in free tier)
+## 🆕 New Services (Integration Complete)
 
-All of the above fit within IBM Cloud Free Tier limits for development and testing. For production, review IBM Cloud quotas and consider scaling resources as needed.
+We integrated a set of new services to enable autonomous trading, model training, tracking, and enhanced monitoring. Integration is complete — the autonomous agent now runs alongside the core TB Coin services.
 
-## Installing the software
+- 🧠 Autonomous Agent: AI-powered autonomous trading agent that analyzes markets 24/7, makes multi-model recommendations (LLM + ML + RL), and can execute controlled trades.
+- 🤖 ML Worker: Background worker for model training, data processing, and batch jobs.
+- 📊 MLflow: Model tracking, experiments, and artifact storage (integrated via MinIO for local runs).
+- 📈 Enhanced Monitoring: Prometheus + Grafana dashboards and custom AI performance metrics.
+
+Workflow:
+- Continuous Analysis: The agent analyzes market data continuously and produces structured insights.
+- AI Decisions: Recommendations are produced by an ensemble of models (technical, LLM, and RL) with confidence & risk scoring.
+- Controlled Execution: Trades may be executed manually via the API or automatically when `AI_TRADING_ENABLED=true` and safety checks pass.
+- Continuous Learning: Periodic retraining and strategy evolution are performed automatically using historical performance and a strategy evolver.
+
+Status: Integration is complete — the new services are included in `docker-compose.yml` and can be run locally with Docker Compose.
 
 
+## 🏗️ Architecture
 
-### Step-by-Step IBM Cloud Free Tier Deployment
+```
+tbcoin-engine-ml/
+├── app/
+│   ├── api/              # API endpoints
+│   │   ├── coins.py      # Coin management endpoints
+│   │   ├── transactions.py  # Transaction endpoints
+│   │   ├── ml_actions.py # ML-powered action endpoints
+│   │   └── health.py     # Health check endpoints
+│   ├── core/             # Core configuration and security
+│   │   ├── config.py     # Application settings
+│   │   └── security.py   # Authentication and JWT
+│   ├── ml/               # Machine Learning modules
+│   │   ├── llm_service.py    # LLM integration service
+│   │   └── action_engine.py  # ML action processor
+│   ├── models/           # Data models
+│   │   └── schemas.py    # Pydantic models
+│   └── services/         # Business logic
+│       ├── coin_service.py        # Coin operations
+│       └── transaction_service.py # Transaction logic
+├── main.py               # Application entry point
+├── Dockerfile           # Docker configuration
+├── docker-compose.yml   # Docker Compose setup
+├── serverless.yml       # Serverless Framework config
+└── requirements.txt     # Python dependencies
+```
 
-1. **Clone the repository and set up environment:**
-  ```bash
-  git clone https://github.com/sjhallo07/tbcoin-engine-ml.git
-  cd tbcoin-engine-ml
-  cp .env.example .env
-  # Edit .env with your secrets and config (see README)
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.11+
+- pip
+- (Optional) Docker and Docker Compose
+- (Optional) OpenAI API key for LLM features
+
+### Local Development
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/sjhallo07/tbcoin-engine-ml.git
+cd tbcoin-engine-ml
+```
+
+2. **Set up environment**
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# (Optional) install ML extras
+pip install -r requirements-ml.txt
+```
+
+3. **Configure environment variables**
+```bash
+cp .env.example .env
+# Edit .env with your settings, especially OPENAI_API_KEY if using LLM features
+```
+
+4. **Run the application**
+```bash
+python main.py
+```
+
+The API will be available at `http://localhost:8000`
+- API Documentation: `http://localhost:8000/docs`
+- ReDoc Documentation: `http://localhost:8000/redoc`
+
+### Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### CoinGecko Demo API
+
+- Set `COINGECKO_DEMO_API_KEY` in your environment (or edit the placeholder inside `examples/coingecko_demo.py`) to authenticate requests against the CoinGecko public demo plan at `https://api.coingecko.com/api/v3/`.
+- Export the demo key (Windows PowerShell example): `setx COINGECKO_DEMO_API_KEY "CG-icu2MHGS8bkS3maLooybpAQP"`.
+- Verify the REST endpoint directly via curl:
+  ```powershell
+  curl --request GET `
+    --url https://api.coingecko.com/api/v3/ping `
+    --header 'x-cg-demo-api-key: CG-icu2MHGS8bkS3maLooybpAQP'
   ```
+- Run `python examples/coingecko_demo.py` to print the top market-cap coins using the required `x-cg-demo-api-key` header and the `/coins/markets` endpoint.
+- Use the script as a template for integrating CoinGecko demo responses while keeping secrets out of source control.
+- For detailed per-asset metadata and market data, run `python examples/coingecko_coin_details.py [coin_id]` (defaults to `bitcoin`) which hits `/coins/{id}` and prints core fields.
+- Explore onchain Solana/Polygon endpoints with `python examples/coingecko_onchain_demo.py <network> <command> [...]` (e.g., `solana multi <addr1> <addr2>` or `polygon-pos new-pools`); this script covers `/onchain/networks/{network}/tokens/multi`, `/tokens/{address}/info`, and `/new_pools` using the demo plan rate limits.
+- Verify CoinGecko Pro service availability with `python examples/coingecko_ping.py`, which calls `/ping` via the official SDK using the `COINGECKO_PRO_API_KEY` environment variable.
+- See `docs/coingecko_ai_building.md` for AI-integration tips covering llms guidance, MCP server setup, and documentation tooling.
+- See `docs/coingecko-onchain-metadata.md` for endpoint descriptions, sample commands, and metadata fields (websites, socials, GT Scores, holders distribution) available via the onchain demo API.
 
-2. **Log in to IBM Cloud and set target region:**
-  ```bash
-  ibmcloud login
-  ibmcloud target -r us-south
-  ```
+### Serverless Deployment (AWS Lambda)
 
-3. **Install Code Engine plugin and create project:**
-  ```bash
-  ibmcloud plugin install code-engine
-  ibmcloud ce project create --name tbcoin-project
-  ibmcloud ce project select --name tbcoin-project
-  ```
+```bash
+# Install Serverless Framework
+npm install -g serverless
 
-4. **Build and push Docker images:**
-  ```bash
-  ./deploy-ibm-ce.sh
-  # This script builds, pushes, and deploys all components (API, ML worker, listener)
-  ```
+# Install serverless plugins
+npm install
 
-5. **Set up secrets and environment variables:**
-  - The deployment script will prompt or use `setup-secrets.sh` to create IBM Cloud secrets for DB, Redis, API keys, etc.
+# Deploy to AWS
+serverless deploy --stage prod
 
-6. **Verify deployment:**
-  ```bash
-  ibmcloud ce app list
-  ibmcloud ce job list
-  ibmcloud ce jobrun list
-  # Get API URL:
-  ibmcloud ce app get --name tbcoin-api -o json | jq -r '.status.url'
-  ```
+# View logs
+serverless logs -f api -t
+```
 
-7. **Access the API:**
-  - Visit the API URL from the previous step
-  - API docs: `<API_URL>/docs`
-  - Health check: `<API_URL>/health`
+## 📚 API Documentation
 
-All steps above are designed to fit within IBM Cloud Free Tier limits. For advanced configuration, see the provided YAML files and scripts.
+### Health Check
+```bash
+GET /api/v1/health
+```
 
-<!-- Add additional H3 level headings as needed for sections that apply to IBM Cloud such as network policy, persistence, cluster topologies, etc.
-### H3
-### H3
--->
+### Coin Management
 
-## Upgrading to a new version
+**Get Balance**
+```bash
+GET /api/v1/coins/balance/{user_id}
+```
 
+**Stake Coins**
+```bash
+POST /api/v1/coins/stake/{user_id}?amount=100
+```
 
-When a new version of a Helm Chart is available, you're alerted in your Schematics workspace. To upgrade to a new version, complete the following steps:
+**Mint Coins** (Admin)
+```bash
+POST /api/v1/coins/mint/{user_id}?amount=1000
+```
 
-1. Go to the **Menu** > **Schematics**.
-2. Select your workspace name. 
-3. Click **Settings**. In the Summary section, your version number is displayed. 
-4. Click **Update**.
-5. Select a version, and click **Update**.
+### Transactions
 
-#### Production Configuration
+**Create Transaction**
+```bash
+POST /api/v1/transactions
+Content-Type: application/json
 
-- For production, set `APP_ENV=production` and `DEBUG=False` in your environment variables or IBM Cloud secrets.
-- Use strong, unique values for `SECRET_KEY` and `JWT_SECRET_KEY`.
-- Scale resources by adjusting min/max instances and CPU/memory in Code Engine app settings or YAMLs.
-- Configure custom domains and HTTPS via IBM Cloud Code Engine settings if needed.
-- For persistent storage, provision IBM Cloud Databases for PostgreSQL and Redis, and update secrets accordingly.
+{
+  "from_user": "user123",
+  "to_user": "user456",
+  "amount": 100.0,
+  "transaction_type": "send"
+}
+```
 
-#### Upgrading to a New Version
+**Quick Send**
+```bash
+POST /api/v1/transactions/quick-send?from_user=user123&to_user=user456&amount=50
+```
 
-To upgrade to a new version:
-1. Update your codebase and Docker images.
-2. Re-run the deployment script (`./deploy-ibm-ce.sh`) to build, push, and redeploy the latest images.
-3. Alternatively, update the image tag in Code Engine via CLI or UI and redeploy the app.
+**Get User Transactions**
+```bash
+GET /api/v1/transactions/user/{user_id}
+```
 
-#### Uninstalling the Software
+### ML-Powered Actions
 
-To remove all deployed resources:
-1. Delete Code Engine apps and jobs:
-  ```bash
-  ibmcloud ce app delete --name tbcoin-api
-  ibmcloud ce app delete --name tbcoin-ml-worker
-  ibmcloud ce job delete --name tbcoin-blockchain-listener
-  ```
-2. Delete the Code Engine project (optional):
-  ```bash
-  ibmcloud ce project delete --name tbcoin-project
-  ```
-3. Remove any associated secrets and registry images if desired.
+**Analyze Transaction**
+```bash
+POST /api/v1/ml/analyze-transaction?from_user=user123&to_user=user456&amount=1000
+```
 
-## Uninstalling the software
+**Get Recommendations**
+```bash
+POST /api/v1/ml/recommend?user_id=user123&context=I want to optimize my portfolio
+```
 
-<!-- Information about how a user can uninstall this product. The following information is an example. Make sure you update this section accordingly. -->
+**Predict Market Trends**
+```bash
+POST /api/v1/ml/predict-trend
+```
 
-Complete the following steps to uninstall a Helm Chart from your account. 
+**Optimize Transaction**
+```bash
+POST /api/v1/ml/optimize-transaction?user_id=user123&amount=500&transaction_type=send
+```
 
-1. Go to the **Menu** > **Schematics**.
-2. Select your workspace name. 
-3. Click **Actions** > **Destroy resources**. All resources in your workspace are deleted.
-4. Click **Update**.
-5. To delete your workspace, click **Actions** > **Delete workspace**.
+**Intelligent Transfer**
+```bash
+POST /api/v1/ml/intelligent-transfer?from_user=user123&to_user=user456&amount=100&auto_execute=true
+```
+
+## 🤖 ML/LLM Integration
+
+### LLM Features
+
+The system integrates with OpenAI's GPT-4 for intelligent decision-making:
+
+1. **Transaction Analysis**: Analyzes transactions for fraud detection and risk assessment
+2. **Portfolio Recommendations**: Provides personalized advice based on user context
+3. **Market Predictions**: Forecasts market trends using historical data
+4. **Transaction Optimization**: Suggests optimal timing and parameters
+
+### Fallback Mode
+
+If no OpenAI API key is configured, the system operates in fallback mode using rule-based algorithms:
+- Basic risk assessment
+- Rule-based recommendations
+- Simple trend analysis
+- Standard optimization
+
+## ⚙️ Configuration
+
+Key environment variables in `.env`:
+
+```env
+# Application
+APP_NAME=TB Coin Engine ML
+APP_ENV=development
+DEBUG=True
+API_HOST=0.0.0.0
+API_PORT=8000
+
+# Security
+SECRET_KEY=your-secret-key-here
+JWT_SECRET_KEY=your-jwt-secret-here
+
+# LLM Configuration
+OPENAI_API_KEY=your-openai-api-key
+LLM_MODEL=gpt-4
+LLM_TEMPERATURE=0.7
+LLM_MAX_TOKENS=1000
+
+# Coin Settings
+INITIAL_COIN_SUPPLY=1000000
+MIN_TRANSACTION_AMOUNT=0.01
+MAX_TRANSACTION_AMOUNT=1000000
+TRANSACTION_FEE_PERCENT=0.5
+```
+
+## 🔒 Security Features
+
+- JWT-based authentication
+- Password hashing with bcrypt
+- Transaction validation and limits
+- Fraud detection using ML
+- Risk assessment for high-value transactions
+
+## 📊 Data Models
+
+### CoinBalance
+- `user_id`: User identifier
+- `balance`: Available coin balance
+- `staked_balance`: Staked coins
+- `last_updated`: Last update timestamp
+
+### Transaction
+- `transaction_id`: Unique transaction ID
+- `from_user`: Sender
+- `to_user`: Receiver
+- `amount`: Transaction amount
+- `transaction_type`: SEND, MINT, BURN, STAKE, UNSTAKE
+- `status`: PENDING, COMPLETED, FAILED, CANCELLED
+- `fee`: Transaction fee
+- `timestamp`: Creation time
+
+### MLActionResponse
+- `action_id`: Action identifier
+- `action_type`: Type of ML action
+- `result`: Action results
+- `confidence`: Confidence score (0-1)
+- `reasoning`: Explanation of decision
+- `recommendations`: List of suggestions
+
+## 🧪 Testing
+
+```bash
+# Run with pytest (when tests are added)
+pytest
+
+# Test API endpoints
+curl http://localhost:8000/api/v1/health
+```
+
+## 📈 Monitoring
+
+The system provides health check endpoints for monitoring:
+
+- `/api/v1/health`: Overall health status
+- `/api/v1/health/live`: Liveness probe
+- `/api/v1/health/ready`: Readiness probe
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+For issues, questions, or contributions, please open an issue on GitHub.
+
+## 🎯 Roadmap
+
+- [ ] PostgreSQL/MongoDB database integration
+- [ ] WebSocket support for real-time updates
+- [ ] Advanced ML models for price prediction
+- [ ] Multi-currency support
+- [ ] Automated testing suite
+- [ ] Performance optimization
+- [ ] Rate limiting and throttling
+- [ ] Advanced analytics dashboard
+
+## 🌐 Deployment Platforms
+
+This backend is compatible with:
+- AWS Lambda (via Serverless Framework)
+- Google Cloud Functions
+- Azure Functions
+- Kubernetes clusters
+- Traditional VPS/dedicated servers
+- Platform-as-a-Service (Heroku, Railway, etc.)
+
+---
+
+Built with ❤️ using FastAPI, Python, and AI
