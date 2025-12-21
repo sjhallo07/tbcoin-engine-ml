@@ -91,3 +91,7 @@ out/
 # Build outputs
 dist/
 *.tsbuildinfo
+
+# Exceptions: track Next.js client library under dashboard-next/lib
+!dashboard-next/lib/
+!dashboard-next/lib/*.ts

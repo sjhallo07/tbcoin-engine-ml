@@ -1,10 +1,9 @@
-/* stylelint-disable at-rule-no-unknown */
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
-/* stylelint-enable at-rule-no-unknown */
+/* Tailwind CSS v4 import */
+@import "tailwindcss";
 
-html, body, #__next {
+html,
+body,
+#__next {
   height: 100%;
 }
 

@@ -26,6 +26,7 @@ const config = {
   // MongoDB settings
   mongodb: {
     uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/tbcoin',
+    useMemory: (process.env.USE_MEMORY_DB || 'false').toLowerCase() === 'true',
     options: {
       maxPoolSize: parseInt(process.env.MONGODB_MAX_POOL_SIZE || '100', 10),
       minPoolSize: parseInt(process.env.MONGODB_MIN_POOL_SIZE || '10', 10),

@@ -9,6 +9,13 @@
 const mongoose = require('mongoose');
 const config = require('./index');
 const logger = require('../utils/logger');
+let MongoMemoryServer;
+try {
+  // Lazy import to avoid requiring dev dependency in production builds
+  ({ MongoMemoryServer } = require('mongodb-memory-server'));
+} catch (e) {
+  MongoMemoryServer = null;
+}
 
 class Database {
   constructor() {
@@ -28,26 +35,37 @@ class Database {
 
     try {
       this.connectionAttempts++;
-      
-      await mongoose.connect(config.mongodb.uri, config.mongodb.options);
-      
+
+      // If configured to use in-memory DB and library is available, start it
+      if (config.mongodb.useMemory) {
+        if (!MongoMemoryServer) {
+          throw new Error('USE_MEMORY_DB=true but mongodb-memory-server is not installed');
+        }
+        logger.warn('Starting in-memory MongoDB for development...');
+        this.memoryServer = await MongoMemoryServer.create();
+        const memUri = this.memoryServer.getUri();
+        await mongoose.connect(memUri, config.mongodb.options);
+      } else {
+        await mongoose.connect(config.mongodb.uri, config.mongodb.options);
+      }
+
       this.isConnected = true;
       this.connectionAttempts = 0;
       logger.info('MongoDB connected successfully');
 
       // Set up connection event handlers
       this.setupEventHandlers();
-      
+
     } catch (error) {
       logger.error(`MongoDB connection failed (attempt ${this.connectionAttempts}):`, error);
-      
+
       if (this.connectionAttempts < this.maxRetries) {
         const delay = Math.min(1000 * Math.pow(2, this.connectionAttempts), 30000);
         logger.info(`Retrying MongoDB connection in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return this.connect();
       }
-      
+
       throw error;
     }
   }
@@ -83,6 +101,12 @@ class Database {
       await mongoose.disconnect();
       this.isConnected = false;
       logger.info('MongoDB disconnected');
+
+      if (this.memoryServer) {
+        await this.memoryServer.stop();
+        logger.info('In-memory MongoDB stopped');
+        this.memoryServer = null;
+      }
     } catch (error) {
       logger.error('Error disconnecting from MongoDB:', error);
       throw error;
