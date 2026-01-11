@@ -1,0 +1,6 @@
+{
+  "name": "Python Devcontainer",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "postCreateCommand": "true",
+  "customizations": { "vscode": { "extensions": ["ms-python.python", "ms-python.vscode-pylance"] } }
+}
