@@ -13,7 +13,7 @@
   "dependencies": {
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
-    "axios": "^1.13.2",
+    "axios": "^1.13.3",
     "netx": "^0.0.1",
     "next": "^14.2.0",
     "react": "18.2.0",
