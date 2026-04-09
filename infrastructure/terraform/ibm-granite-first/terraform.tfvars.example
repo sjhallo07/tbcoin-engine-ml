@@ -1,0 +1,12 @@
+ibmcloud_api_key           = "replace-me"
+region                     = "us-south"
+resource_group_name        = "tbcoin-granite-rg"
+prefix                     = "tbcoin"
+cos_instance_name          = "tbcoin-cos"
+cos_bucket_name            = "tbcoin-granite-artifacts"
+bucket_region              = "us-south"
+postgres_instance_name     = "tbcoin-postgresql"
+redis_instance_name        = "tbcoin-redis"
+code_engine_project_name   = "tbcoin-granite-project"
+provision_watsonx_runtime  = false
+watsonx_runtime_name       = "tbcoin-watsonx-runtime"
